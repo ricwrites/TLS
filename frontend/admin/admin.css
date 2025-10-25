@@ -1,0 +1,22 @@
+body {
+background-color: beige;
+}
+
+.headimg {
+width: fit-content; 
+height: 150px; 
+margin-right:100px;
+float:left;
+}
+
+.pagetitle {
+color: #c00000;
+font-size: 48px;
+align-items: flex-start;
+right:400px;
+}
+
+.header {
+display: flex;
+justify-content: center;
+}

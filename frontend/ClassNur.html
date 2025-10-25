@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+ <title> Nursery </title>
+
+
+<link rel = "stylesheet" href = "styletls.css">
+<header class = "header">
+<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1>
+
+
+</head>
+<body>
+<div class = "navga">
+<div class= "login"><a class ="navlink">Nursery</a></div>
+<div class = "login"><a class ="navlink" href = "ClassLKG.html">LKG</a></div>
+<div class= "login"><a class ="navlink" href = "ClassUKG.html">UKG</a></div>
+<div class = "login"><a class ="navlink" href ="Class1.html">Class 1</a></div>
+<div class = "login"><a class ="navlink" href ="Class2.html">Class 2</a></div>
+<div class = "login"><a class ="navlink" href ="Class3.html">Class 3</a></div>
+<div class = "login"><a class ="navlink" href ="Class4.html">Class 4</a></div>
+<div class = "login"><a class ="navlink" href ="Class5.html">Class 5</a></div>
+<div class = "login"><a class ="navlink" href ="Class6.html">Class 6</a></div>
+<div class = "login"><a class ="navlink" href ="Class7.html">Class 7</a></div>
+<div class = "login"><a class ="navlink" href ="Class8.html">Class 8</a></div>
+<div class = "login"><a class = "navlink" href ="home.html">Home</a></div>
+</div>
+  
+  
+  <div class= "subbuttons"id="subjects">
+    <button onclick="toggleSubject('Literacy', this)">English Letters</button>
+    <button onclick="toggleSubject('OralLang', this)">Oral Language Development</button>
+    <button onclick="toggleSubject('OralLanghome', this)">Oral Language Development (Home play)</button>
+    <button onclick="toggleSubject('Numeracy', this)">Numeracy</button>
+    <button onclick="toggleSubject('Numeracyhome', this)">Numeracy (Home play)</button>
+    <button onclick="toggleSubject('Wellness', this)">Wellness and Wellbeing</button>
+    <button onclick="toggleSubject('World', this)">World around me</button>
+    <button onclick="toggleSubject('Recitation', this)">Recitation</button>
+    <button onclick="toggleSubject('Attendance', this)">Attendance</button>
+    <button onclick="toggleSubject('Games', this)">Games & Sports</button>
+    <button onclick="toggleSubject('Music', this)">Music</button>
+    <button onclick="toggleSubject('Dance', this)">Dance</button>
+    <button onclick="toggleSubject('Art', this)">Art</button>
+  </div>
+
+  <div class= "CTbuttons"id="subjects">
+
+    <button onclick="toggleSubject('Attentiveness', this)">Attentiveness</button>
+    <button onclick="toggleSubject('Communication', this)">Communication</button>
+    <button onclick="toggleSubject('Discipline', this)">Discipline</button>
+    <button onclick="toggleSubject('Hygiene', this)">Personal Hygiene</button>
+    <button onclick="toggleSubject('Teamwork', this)">Teamwork</button>
+    <button onclick="toggleSubject('Responsibility', this)">Responsibility</button>
+  </div>
+
+  <form class = "classtab" id="classForm">
+    <table id="classTable">
+      <thead>
+        <tr>
+        <th>Roll No</th>
+        <th>Student</th>
+        </tr>
+      </thead>
+      <tbody id="studentRows"></tbody>
+    </table>
+    <button type="button" onclick="submitData()">Submit</button>
+  </form>
+
+  <script>
+    const students = ["Aaran Mars B. Marak","Achilles A. Sangma","Achuie Rudian R. Marak","Aeraliah Deachi G. Momin","Ahava Kayden Ch. Momin","Ahida Averie B. Sangma","Ahnija Marvi Awe Sangma","Akarimi Nokrek Marak","Amaiya Zia Koch","Amdilesa Donna K. Sangma","Anora D. Sangma","Asher Jakim M. Sangma","Bianio Jakkea D. Shira","Chegen Rhagim Ch. Marak","Coro M. Marak","Damion Achuga S. Sangma","Demico G. Momin","Diraku Niesalo M. Sangma","Jakkam A. Sangma","Kasaakame G. Momin","Ketsi Elimea B. Sangma","Lyam Maceo M. Marak","Maddox Jayden N. Sangma","Naira Barman","Riyan Dey","Riyanshi Hajong","Tapsi R. Marak","Trishav Gupta","Zyro Abakim M.Sangma"];
+    const rollNos = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29];
+    const table = document.getElementById('classTable');
+    const studentRows = document.getElementById('studentRows');
+
+    // Initialize table with student names
+   students.forEach((name, index) => {
+  const tr = document.createElement('tr');
+
+  // Roll number cell
+  const rollTd = document.createElement('td');
+  rollTd.textContent = rollNos[index];
+  tr.appendChild(rollTd);
+
+  // Student name cell
+  const nameTd = document.createElement('td');
+  nameTd.textContent = name;
+  tr.appendChild(nameTd);
+
+  studentRows.appendChild(tr);
+});
+
+
+
+    function toggleSubject(subject, btn) {
+      const headerRow = table.rows[0];
+      const headers = Array.from(headerRow.cells).map(th => th.textContent);
+      const subjectIndex = headers.indexOf(subject);
+
+      if (subjectIndex === -1) {
+        // Add subject
+        btn.classList.add("active");
+
+        const th = document.createElement('th');
+        th.textContent = subject;
+        headerRow.appendChild(th);
+
+        Array.from(studentRows.children).forEach((tr, i) => {
+          const td = document.createElement('td');
+          const input = document.createElement('input');
+          input.type = "number";
+          input.dataset.student = students[i];
+          input.dataset.subject = subject;
+          td.appendChild(input);
+          tr.appendChild(td);
+        });
+
+      } else {
+        // Remove subject
+        btn.classList.remove("active");
+
+        // Remove header cell
+        headerRow.deleteCell(subjectIndex);
+
+        // Remove each subject's column from every row
+        Array.from(studentRows.children).forEach(tr => {
+          tr.deleteCell(subjectIndex);
+        });
+      }
+    }
+
+    function submitData() {
+      const inputs = document.querySelectorAll('input');
+      const data = {};
+
+      inputs.forEach(input => {
+        const s = input.dataset.student;
+        const subj = input.dataset.subject;
+        const val = input.value || null;
+
+        if (!data[s]) data[s] = {};
+        data[s][subj] = val;
+      });
+
+      console.log("Compiled JSON:", data);
+      alert("Submission logged to console, Master Ric. Data integrity maintained.");
+    }
+  </script>
+</body>
+</html>

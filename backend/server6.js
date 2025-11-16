@@ -175,10 +175,9 @@ app.use((req, res, next) => {
 
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
 
-app.get('/admin/*', (req, res) => {
+app.get('/admin/:path(*)', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dis/index.html'));
 });
-
 
 
 

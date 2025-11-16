@@ -7,7 +7,8 @@
 
 <link rel = "stylesheet" href = "styletls.css">
 <header class = "header">
-<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1>
+<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1></header>
+<h2 class = "pagesubtitle">Tura</h2>
 
 
 </head>
@@ -45,6 +46,7 @@
     <button onclick="toggleSubject('Music', this)">Music</button>
     <button onclick="toggleSubject('Dance', this)">Dance</button>
     <button onclick="toggleSubject('Art', this)">Art</button>
+    <button onclick="toggleSubject('SignLanguage', this)">Sign Language</button>
   </div>
 
   <div class= "CTbuttons"id="subjects">
@@ -178,6 +180,24 @@ function submitData() {
     data[student][subject] = value;
   });
 
+ function submitData() {
+  const className = document.getElementById('className')?.value.trim() || 'UnknownClass';
+  const year = document.getElementById('yearSelect').value;  // from dropdown
+  const term = document.getElementById('termSelect').value;
+
+
+  const inputs = document.querySelectorAll('input[data-student]');
+  const data = {};
+
+  inputs.forEach(input => {
+    const student = input.dataset.student;
+    const subject = input.dataset.subject;
+    const value = input.value || null;
+
+    if (!data[student]) data[student] = {};
+    data[student][subject] = value;
+  });
+
   const payload = {
     className,
     year,
@@ -185,10 +205,13 @@ function submitData() {
     marks: data
   };
 
-  fetch('http://localhost:4040/submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+const baseURL = "https://tls-server.onrender.com";
+
+
+fetch(`${baseURL}/submit`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload)
   })
   .then(res => res.json())
   .then(resp => {

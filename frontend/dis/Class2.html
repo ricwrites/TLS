@@ -7,8 +7,8 @@
 
 <link rel = "stylesheet" href = "styletls.css">
 <header class = "header">
-<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1>
-
+<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1></header>
+<h2 class = "pagesubtitle">Tura</h2>
 
 </head>
 <body>
@@ -48,6 +48,7 @@
     <button onclick="toggleSubject('Music', this)">Music</button>
     <button onclick="toggleSubject('Dance', this)">Dance</button>
     <button onclick="toggleSubject('Art', this)">Art</button>
+    <button onclick="toggleSubject('SignLanguage', this)">Sign Language</button>
   </div>
 
   <div class= "CTbuttons"id="subjects">
@@ -60,7 +61,7 @@
     <button onclick="toggleSubject('Responsibility', this)">Responsibility</button>
     <button onclick="toggleSubject('Comments', this)">Comments</button>
   </div>
-
+  <input type="hidden" id="className" value="5. Class 2">
   <form class = "classtab" id="classForm">
     <table id="classTable">
       <thead>
@@ -71,6 +72,19 @@
       </thead>
       <tbody id="studentRows"></tbody>
     </table>
+<label for="yearSelect">Select Year: </label>
+<select id="yearSelect">
+  <option value="2025" selected>2025</option>
+  <option value="2026">2026</option>
+  <option value="2027">2027</option>
+</select>
+
+
+<label for="termSelect">Select Term: </label>
+<select id="termSelect">
+  <option value="1">Term 1</option>
+  <option value="2" selected>Term 2</option>
+</select>
     <button type="button" onclick="submitData()">Submit</button>
   </form>
 
@@ -116,7 +130,7 @@
         Array.from(studentRows.children).forEach((tr, i) => {
           const td = document.createElement('td');
           const input = document.createElement('input');
-          input.type = "number";
+          input.type = "text";
           input.dataset.student = students[i];
           input.dataset.subject = subject;
           td.appendChild(input);
@@ -137,22 +151,58 @@
       }
     }
 
-    function submitData() {
-      const inputs = document.querySelectorAll('input');
-      const data = {};
+const termSelect = document.getElementById('termSelect');
+termSelect.addEventListener('change', () => {
+  document.getElementById('term').value = termSelect.value;
+});
 
-      inputs.forEach(input => {
-        const s = input.dataset.student;
-        const subj = input.dataset.subject;
-        const val = input.value || null;
+const yearSelect = document.getElementById('yearSelect');
+yearSelect.addEventListener('change', () => {
+  document.getElementById('year').value = yearSelect.value;
+});
 
-        if (!data[s]) data[s] = {};
-        data[s][subj] = val;
-      });
 
-      console.log("Compiled JSON:", data);
-      alert("Submission logged to console, Master Ric. Data integrity maintained.");
-    }
+function submitData() {
+  const className = document.getElementById('className')?.value.trim() || 'UnknownClass';
+  const year = document.getElementById('yearSelect').value;  // from dropdown
+  const term = document.getElementById('termSelect').value;
+
+
+  const inputs = document.querySelectorAll('input[data-student]');
+  const data = {};
+
+  inputs.forEach(input => {
+    const student = input.dataset.student;
+    const subject = input.dataset.subject;
+    const value = input.value || null;
+
+    if (!data[student]) data[student] = {};
+    data[student][subject] = value;
+  });
+
+  const payload = {
+    className,
+    year,
+    term,
+    marks: data
+  };
+
+  fetch('http://localhost:4040/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(resp => {
+    console.log("Server response:", resp);
+    alert("Data submitted successfully!");
+  })
+  .catch(err => {
+    console.error("Error submitting data:", err);
+    alert("Failed to submit data. Check console for errors.");
+  });
+}
+
   </script>
 </body>
 </html>

@@ -64,6 +64,8 @@ initDB();
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
 });
+//For static HTML pages
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 
 
@@ -171,18 +173,9 @@ app.use((req, res, next) => {
 });
 
 
-app.use(express.static(path.join(__dirname, 'frontend/public')));
+app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
 
-
-// Serve static backend pages
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve React build files
-app.use(express.static(path.join(__dirname, '../frontend/dis')));
-
-
-// Catch-all for React routes, excluding API
-app.get(/^\/(?!api).*/, (req, res) => {
+app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dis/index.html'));
 });
 
@@ -264,7 +257,8 @@ app.post('/api/students', async (req, res) => {
     res.status(500).json({ error: "Database insert failed" });
   }
 });
-    
+
+
 
 /* --------------------------------------------- */
 

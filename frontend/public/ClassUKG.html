@@ -205,10 +205,7 @@ function submitData() {
     marks: data
   };
 
-const baseURL =
-  window.location.hostname === 'localhost'
-    ? 'http://localhost:4040'
-    : 'https://tls-i91h.onrender.com';
+const baseURL = "https://tls-server.onrender.com";
 
 
 fetch(`${baseURL}/submit`, {

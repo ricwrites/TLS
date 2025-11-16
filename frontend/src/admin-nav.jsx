@@ -13,7 +13,6 @@ return (
 <Link to = "/studentdetails">Modify Student Info</Link>
 <Link to="/payments">Payment Tracker</Link> <br />
 <Link to="/login.html">Main Menu</Link> <br />
-<Link to="/">Home</Link> <br />
 </nav>
 );
 };
@@ -27,7 +26,6 @@ return (
     <Route path = "/dashboard" element = {<Dashboard />} />
     <Route path = "/studentdetails" element = {<StudentDetails />} />
     <Route path = "/payments" element = {<PaymentTracker />} />
-    <Route path = "/" element = {<Home />} />
     </Routes>
 </BrowserRouter>
 );

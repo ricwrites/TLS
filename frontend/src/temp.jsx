@@ -10,7 +10,7 @@ export const ReportCards = () => {
   const [selectedTerm, setSelectedTerm] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:4040/api/classes')
+    fetch('https://tls-server.onrender.com/api/classes')
       .then(res => res.json())
       .then(data => setClasses(data))
       .catch(err => console.error('Error fetching classes:', err));
@@ -162,7 +162,7 @@ export const StudentDetails = () => {
 
   // Fetch classes on mount
   useEffect(() => {
-    fetch("http://localhost:4040/api/classes")
+    fetch("https://tls-server.onrender.com/api/classes")
       .then(res => res.json())
       .then(data => setClasses(data))
       .catch(err => console.error("Error fetching classes:", err));
@@ -172,7 +172,7 @@ export const StudentDetails = () => {
   useEffect(() => {
     if (!selectedClass) return;
 
-    fetch(`http://localhost:4040/api/students/${selectedClass}`)
+    fetch(`https://tls-server.onrender.com/api/students/${selectedClass}`)
       .then(res => res.json())
       .then(data => setStudents(data))
       .catch(err => console.error("Error fetching students:", err));

@@ -64,8 +64,7 @@ initDB();
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
 });
-//For static HTML pages
-app.use(express.static(path.join(__dirname, '../frontend/public')));
+
 
 
 
@@ -172,13 +171,10 @@ app.use((req, res, next) => {
   next();
 });
 
+//For static HTML pages
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
-
-app.get('/admin/:path(*)', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dis/index.html'));
-});
-
 
 
 // Example using Express + PostgreSQL

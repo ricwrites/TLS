@@ -18,8 +18,7 @@ const AdminPage = () => (
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/studentdetails" element={<StudentDetails />} />
         <Route path="/payments" element={<PaymentTracker />} />
-        <Route path="/root" element={<ToRoot />} />
-        <Route path="/" element={<Dashboard />} /> {/* Default page */}
+        <Route path="/" element={<ToRoot />} /> {/* Default page */}
       </Routes>
     </div>
   </BrowserRouter>

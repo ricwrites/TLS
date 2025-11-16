@@ -19,7 +19,7 @@ const { Pool } = pg;
 
 // Render will inject DATABASE_URL as an environment variable
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DB_URL,
   ssl: { rejectUnauthorized: false }
 });
 

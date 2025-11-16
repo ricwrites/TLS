@@ -1,0 +1,64 @@
+{
+  "className": "Nursery",
+  "year": "2025",
+  "term": "2",
+  "marks": {
+    "Aaran Mars B. Marak": {
+      "Literacy": "A",
+      "Numeracy": "B",
+      "Games": "B+",
+      "Music": "C",
+      "Dance": "B",
+      "Art": "B"
+    },
+    "Achilles A. Sangma": {
+      "Literacy": "A",
+      "Numeracy": "B",
+      "Games": "B+",
+      "Music": "C",
+      "Dance": "B",
+      "Art": "B"
+    },
+    "Achuie Rudian R. Marak": {
+      "Literacy": "A",
+      "Numeracy": "B",
+      "Games": "B+",
+      "Music": "C",
+      "Dance": "B",
+      "Art": "B"
+    },
+    "Aeraliah Deachi G. Momin": {
+      "Literacy": "A",
+      "Numeracy": "B",
+      "Games": "B+",
+      "Music": "C",
+      "Dance": "B",
+      "Art": "B"
+    },
+    "Ahava Kayden Ch. Momin": {},
+    "Ahida Averie B. Sangma": {},
+    "Ahnija Marvi Awe Sangma": {},
+    "Akarimi Nokrek Marak": {},
+    "Amaiya Zia Koch": {},
+    "Amdilesa Donna K. Sangma": {},
+    "Anora D. Sangma": {},
+    "Asher Jakim M. Sangma": {},
+    "Bianio Jakkea D. Shira": {},
+    "Chegen Rhagim Ch. Marak": {},
+    "Coro M. Marak": {},
+    "Damion Achuga S. Sangma": {},
+    "Demico G. Momin": {},
+    "Diraku Niesalo M. Sangma": {},
+    "Jakkam A. Sangma": {},
+    "Kasaakame G. Momin": {},
+    "Ketsi Elimea B. Sangma": {},
+    "Lyam Maceo M. Marak": {},
+    "Maddox Jayden N. Sangma": {},
+    "Naira Barman": {},
+    "Riyan Dey": {},
+    "Riyanshi Hajong": {},
+    "Tapsi R. Marak": {},
+    "Trishav Gupta": {},
+    "Zyro Abakim M.Sangma": {}
+  }
+}

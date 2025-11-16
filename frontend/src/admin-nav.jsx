@@ -59,7 +59,7 @@ navigate("/studentdetails")
 };
 
 const goToLogin = () => {
-  window.location.href = 'http://localhost:4040/login.html';
+  window.location.href = 'https://tls-server.onrender.com/login.html';
 };
 
 

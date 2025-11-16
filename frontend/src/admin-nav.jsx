@@ -12,7 +12,7 @@ return (
 <Link to="/dashboard">Dashboard</Link> <br />
 <Link to = "/studentdetails">Modify Student Info</Link>
 <Link to="/payments">Payment Tracker</Link> <br />
-<Link to="/login.html">Main Menu</Link> <br />
+<a href="/">Main Menu</a> <br />
 </nav>
 );
 };
@@ -57,7 +57,7 @@ navigate("/studentdetails")
 };
 
 const goToLogin = () => {
-  window.location.href = 'https://tls-server.onrender.com/login.html';
+  window.location.href = '/';
 };
 
 

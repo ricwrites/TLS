@@ -13,7 +13,7 @@
 
   <div class="loginbit">
     <h1>Login</h1>
-    <form id="loginForm">
+    <form id="loginForm" onsubmit="return false;">
       <label>Username: <input type="text" name="username" required></label><br>
       <label>Password: <input type="password" name="password" required></label><br>
       <button type="submit">Login</button>
@@ -24,9 +24,7 @@
     const API_URL = "https://tls-server.onrender.com";
     const form = document.getElementById('loginForm');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
+    form.addEventListener('submit', async () => {
       const formData = new FormData(form);
       const data = {
         username: formData.get('username'),

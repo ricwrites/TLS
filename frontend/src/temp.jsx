@@ -2,6 +2,7 @@ import './admin.css';
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import {PaymentTracks} from './paymenttrackes.jsx';
 
 export const ReportCards = () => {
   const [classes, setClasses] = useState([]);
@@ -243,7 +244,10 @@ return (
 
 
 export const PaymentTracker = () => {
-return <h1> A place to keep track of fees payments of various kinds coming into the school </h1>;
+return (
+<div>
+<PaymentTracks />
+</div>);
 };
 
 

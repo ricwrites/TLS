@@ -4,8 +4,8 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  root: ".",  // <-- points to your index.html
-
+  root: "./",  // <-- points to your index.html
+  base: "./",
   build: {
     outDir: path.resolve(__dirname, "dis"),  // <-- build goes here
     emptyOutDir: true

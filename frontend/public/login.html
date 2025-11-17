@@ -24,7 +24,7 @@
   </form>
 </div>
   <script>
-    const API_URL = "https://tls-server.onrender.com";
+    const API_URL = "https://learningsanctuarytura.onrender.com";
     const form = document.getElementById('loginForm');
 
     form.addEventListener('submit', async (e) => {
@@ -35,7 +35,7 @@
         password: formData.get('password')
       };
 
-        const res = await fetch( ${API_URL}/login`, {
+        const res = await fetch( `${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -46,7 +46,7 @@
         if (json.role === 'teacher') {
           window.location.href = './home.html';
         } else if (json.role === 'admin') {
-          window.location.href = './index.html';
+          window.location.href = '/admin';
         }
       } else {
         alert('Invalid login');

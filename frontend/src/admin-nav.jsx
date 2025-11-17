@@ -19,7 +19,7 @@ return (
 
 export const Browser = () => {
 return (
-<BrowserRouter>
+<BrowserRouter basename = "/admin">
     <NavBar /> <br />
     <Routes>
     <Route path = "/reportcards" element = {<ReportCards />} />

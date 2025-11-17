@@ -7,7 +7,7 @@ import {ReportCards, StudentDetails, Dashboard, PaymentTracker,ToRoot} from "./t
 import './admin.css';
 
 const AdminPage = () => (
-  <BrowserRouter>
+  <BrowserRouter basename ="/admin">
     {/* This stays visible on every page */}
     <NavButtons />
 

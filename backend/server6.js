@@ -50,9 +50,12 @@ app.use(express.static(publicPath));
    REACT ADMIN APP
 ----------------------------------------------------*/
 const adminPath = path.join(__dirname, "../frontend/dis");
-app.use("/admin", express.static(adminPath));
+// SERVE ADMIN STATIC FILES
+app.use("/admin", express.static(adminPath, {
+  index: "index.html"
+}));
 
-// ⭐ IMPORTANT: SPA fallback
+// ADMIN FALLBACK FOR SPA ROUTES
 app.get("/admin/*", (req, res) => {
   res.sendFile(path.join(adminPath, "index.html"));
 });

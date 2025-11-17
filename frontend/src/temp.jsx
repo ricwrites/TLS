@@ -243,7 +243,9 @@ return (
 
 
 
-export const PaymentTracker = () => <PaymentTracks />;
+export const PaymentTracker = () => {
+return <h2> A place to track payments coming in and going out </h2>
+};
 
 
 

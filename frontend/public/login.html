@@ -17,7 +17,8 @@
 <body id = "parent">
 <div class = "loginbit">
   <h1>Login</h1>
-  <form id="loginForm">
+  <form id="loginForm" action = "#">
+    
     <label>Username: <input type="text" name="username" required></label><br>
     <label>Password: <input type="password" name="password" required></label><br>
     <button type="submit">Login</button>
@@ -46,7 +47,7 @@
         if (json.role === 'teacher') {
           window.location.href = '/home.html';
         } else if (json.role === 'admin') {
-          window.location.href = '/admin';
+          window.location.href = 'https://tls-server.onrender.com/admin';
         }
       } else {
         alert('Invalid login');

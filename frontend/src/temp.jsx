@@ -244,7 +244,7 @@ return (
 
 
 export const PaymentTracker = () => {
-return <h2> A place to track payments coming in and going out </h2>
+return <h2> A place to track payments coming in and going out </h2>;
 };
 
 

@@ -243,12 +243,7 @@ return (
 
 
 
-export const PaymentTracker = () => {
-return (
-<div>
-<PaymentTracks />
-</div>);
-};
+export const PaymentTracker = () => <PaymentTracks />;
 
 
 

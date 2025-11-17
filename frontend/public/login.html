@@ -1,59 +1,60 @@
 <!doctype html>
+
 <html>
+
 <head>
-  <title>TLS Login</title>
-  <link rel="stylesheet" href="styletls.css">
+
+<title> TLS Login </title>
+
+
+<link rel = "stylesheet" href = "styletls.css">
 </head>
-<body id="parent">
-  <header class="header">
-    <img class="headimg" src="./assets/TLS.jpg">
-    <h1 class="pagetitle">The Learning Sanctuary</h1>
-  </header>
-  <h2 class="pagesubtitle">Tura</h2>
+<body id = "parent">
+<header class = "header">
+<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1>
 
-  <div class="loginbit">
-    <h1>Login</h1>
-    <form id="loginForm" onsubmit="return false;">
-      <label>Username: <input type="text" name="username" required></label><br>
-      <label>Password: <input type="password" name="password" required></label><br>
-      <button type="submit">Login</button>
-    </form>
-  </div>
+</header>
+<h2 class= "pagesubtitle"> Tura </h2>
 
+<div class = "loginbit">
+  <h1>Login</h1>
+  <form id="loginForm" action = "#">
+    
+    <label>Username: <input type="text" name="username" required></label><br>
+    <label>Password: <input type="password" name="password" required></label><br>
+    <button type="submit">Login</button>
+  </form>
+</div>
   <script>
     const API_URL = "https://tls-server.onrender.com";
     const form = document.getElementById('loginForm');
 
-    form.addEventListener('submit', async () => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const formData = new FormData(form);
       const data = {
         username: formData.get('username'),
         password: formData.get('password')
       };
 
-      try {
-        const res = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
+        const res = await fetch( `${API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
-        if (!res.ok) {
-          alert('Invalid login');
-          return;
-        }
-
+      if (res.ok) {
         const json = await res.json();
         if (json.role === 'teacher') {
           window.location.href = '/home.html';
         } else if (json.role === 'admin') {
-          window.location.href = '/admin';
+          window.location.href = 'https://tls-server.onrender.com/admin';
         }
-      } catch (err) {
-        console.error('Login error:', err);
-        alert('Login failed. Try again.');
+      } else {
+        alert('Invalid login');
       }
     });
   </script>
 </body>
 </html>
+

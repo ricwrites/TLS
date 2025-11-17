@@ -7,7 +7,7 @@ export default defineConfig({
   root: ".",  // <-- points to your index.html
 
   build: {
-    outDir: path.resolve(__dirname, "build"),  // <-- build goes here
+    outDir: path.resolve(__dirname, "dis"),  // <-- build goes here
     emptyOutDir: true
   }
 });

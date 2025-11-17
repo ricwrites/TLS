@@ -154,6 +154,17 @@ app.post("/submit", async (req, res) => {
   }
 });
 
+// Serve teacher public files
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+
+// Serve React admin build
+app.use("/admin", express.static(path.join(__dirname, "../frontend/dis")));
+app.get("/admin/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dis/index.html"));
+});
+
+
+
 /* ---------------------------------------------------
    GET CLASSES
 ----------------------------------------------------*/

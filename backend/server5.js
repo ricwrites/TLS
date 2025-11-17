@@ -19,16 +19,28 @@ const { Pool } = pg;
 
 // Render will inject DATABASE_URL as an environment variable
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DB_URL,
   ssl: { rejectUnauthorized: false }
 });
 
 
 const PORT = process.env.PORT || 4040;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://learningsanctuarytura.onrender.com'
+}));
+
 app.use(bodyParser.json());
 
+//For static HTML pages
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+
+app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
+});
 /* ---------------------------------------------
    Create tables if they don't exist
 ------------------------------------------------*/
@@ -61,12 +73,6 @@ await pool.query(`
 initDB();
 
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
-});
-
-
-
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -78,6 +84,7 @@ app.post('/login', (req, res) => {
     res.status(401).json({ error: 'Invalid credentials' });
   }
 });
+
 
 
 /* ---------------------------------------------
@@ -165,20 +172,10 @@ app.get("/api/classes", async (req, res) => {
   }
 });
 
-
-
-// Serve static backend pages
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve React build files
-app.use(express.static(path.join(__dirname, '../frontend/dis')));
-
-
-// Catch-all for React routes, excluding API
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dis/index.html'));
+app.use((req, res, next) => {
+  console.log('Requested URL:', req.url);
+  next();
 });
-
 
 
 
@@ -188,20 +185,76 @@ app.get('/api/students/:className', async (req, res) => {
   const { year, term } = req.query;
 
   try {
-    const result = await pool.query(
-      `SELECT id, name, roll_number AS roll, contact 
-       FROM students 
-       WHERE class = $1 AND year = $2 AND term = $3 
+    // 1️⃣ Fetch student records from students table
+    const studentResult = await pool.query(
+      `SELECT id, name, roll_number AS roll, contact
+       FROM students
+       WHERE class = $1 AND year = $2 AND term = $3
        ORDER BY roll_number`,
       [className, year, term]
     );
 
-    res.json(result.rows);
+    let students = studentResult.rows;
+
+    // 2️⃣ Fetch student names from marks table (unique)
+    const markResult = await pool.query(
+      `SELECT DISTINCT student_name
+       FROM marks
+       WHERE class_name = $1 AND year = $2 AND term = $3`,
+      [className, year, term]
+    );
+
+    const markNames = markResult.rows.map(r => r.student_name);
+
+    // 3️⃣ Find names missing in students table
+    const studentNames = students.map(s => s.name);
+    const missingNames = markNames.filter(n => !studentNames.includes(n));
+
+    // 4️⃣ Auto-insert missing names into students table
+    for (const name of missingNames) {
+      const insert = await pool.query(
+        `INSERT INTO students (name, roll_number, contact, class, year, term)
+         VALUES ($1, NULL, NULL, $2, $3, $4)
+         RETURNING id, name, roll_number AS roll, contact`,
+        [name, className, year, term]
+      );
+
+      students.push(insert.rows[0]);
+    }
+
+    // 5️⃣ Return merged + sorted list
+    students.sort((a, b) => (a.roll ?? 9999) - (b.roll ?? 9999));
+
+    res.json(students);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database fetch failed' });
   }
 });
+
+app.post('/api/students', async (req, res) => {
+  const { name, roll, contact, className, year, term } = req.body;
+
+  if (!name || !className || !year || !term) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO students (name, roll_number, contact, class, year, term)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, name, roll_number AS roll, contact`,
+      [name, roll || null, contact || null, className, year, term]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Insert student error:", err);
+    res.status(500).json({ error: "Database insert failed" });
+  }
+});
+
 
 
 /* --------------------------------------------- */
@@ -209,4 +262,3 @@ app.get('/api/students/:className', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

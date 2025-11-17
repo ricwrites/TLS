@@ -22,7 +22,6 @@ const users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
    POSTGRES
 ----------------------------------------------------*/
 const { Pool } = pg;
-
 const pool = new Pool({
   connectionString: process.env.DB_URL,
   ssl: { rejectUnauthorized: false }
@@ -31,38 +30,33 @@ const pool = new Pool({
 /* ---------------------------------------------------
    MIDDLEWARE
 ----------------------------------------------------*/
-
 app.use(cors({
-  origin: "https://learningsanctuarytura.onrender.com",
+  origin: [
+    "https://learningsanctuarytura.onrender.com",
+    "https://tls-server.com"
+  ],
   methods: ["GET", "POST"]
 }));
 
 app.use(bodyParser.json());
 
 /* ---------------------------------------------------
-   STATIC FILES
-   (Teacher pages + login)
-----------------------------------------------------*/
-const publicPath = path.join(__dirname, "../frontend/public");
-app.use(express.static(publicPath));
-
-/* ---------------------------------------------------
-   REACT ADMIN APP
+   REACT ADMIN SPA
 ----------------------------------------------------*/
 const adminPath = path.join(__dirname, "../frontend/dis");
-// SERVE ADMIN STATIC FILES
-app.use("/admin", express.static(adminPath, {
-  index: "index.html"
-}));
+app.use("/admin", express.static(adminPath, { index: "index.html" }));
 
-// ADMIN FALLBACK FOR SPA ROUTES
+// SPA fallback: any /admin/* route serves React index.html
 app.get("/admin/*", (req, res) => {
   res.sendFile(path.join(adminPath, "index.html"));
 });
 
 /* ---------------------------------------------------
-   ROOT → LOGIN PAGE
+   TEACHER PAGES + LOGIN
 ----------------------------------------------------*/
+const publicPath = path.join(__dirname, "../frontend/public");
+app.use(express.static(publicPath));
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(publicPath, "login.html"));
 });
@@ -156,17 +150,6 @@ app.post("/submit", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
-// Serve teacher public files
-app.use(express.static(path.join(__dirname, "../frontend/public")));
-
-// Serve React admin build
-app.use("/admin", express.static(path.join(__dirname, "../frontend/dis")));
-app.get("/admin/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dis/index.html"));
-});
-
-
 
 /* ---------------------------------------------------
    GET CLASSES

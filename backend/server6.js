@@ -12,38 +12,78 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-const usersPath = path.join(__dirname, 'users.json');
-const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+/* ---------------------------------------------------
+   LOAD USERS.JSON
+----------------------------------------------------*/
+const usersPath = path.join(__dirname, "users.json");
+const users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
 
+/* ---------------------------------------------------
+   POSTGRES
+----------------------------------------------------*/
 const { Pool } = pg;
 
-// Render will inject DATABASE_URL as an environment variable
 const pool = new Pool({
   connectionString: process.env.DB_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-
-const PORT = process.env.PORT || 4040;
+/* ---------------------------------------------------
+   MIDDLEWARE
+----------------------------------------------------*/
 
 app.use(cors({
-  origin: 'https://learningsanctuarytura.onrender.com'
+  origin: "https://learningsanctuarytura.onrender.com",
+  methods: ["GET", "POST"]
 }));
 
 app.use(bodyParser.json());
 
-//For static HTML pages
-app.use(express.static(path.join(__dirname, '../frontend/public')));
+/* ---------------------------------------------------
+   STATIC FILES
+   (Teacher pages + login)
+----------------------------------------------------*/
+const publicPath = path.join(__dirname, "../frontend/public");
+app.use(express.static(publicPath));
 
-app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
+/* ---------------------------------------------------
+   REACT ADMIN APP
+----------------------------------------------------*/
+const adminPath = path.join(__dirname, "../frontend/dis");
+app.use("/admin", express.static(adminPath));
 
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
+// ⭐ IMPORTANT: SPA fallback
+app.get("/admin/*", (req, res) => {
+  res.sendFile(path.join(adminPath, "index.html"));
 });
-/* ---------------------------------------------
-   Create tables if they don't exist
-------------------------------------------------*/
+
+/* ---------------------------------------------------
+   ROOT → LOGIN PAGE
+----------------------------------------------------*/
+app.get("/", (req, res) => {
+  res.sendFile(path.join(publicPath, "login.html"));
+});
+
+/* ---------------------------------------------------
+   LOGIN ROUTE
+----------------------------------------------------*/
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const user = users.find(
+    (u) => u.username === username && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  res.json({ role: user.role });
+});
+
+/* ---------------------------------------------------
+   DB INIT
+----------------------------------------------------*/
 async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS marks (
@@ -57,50 +97,33 @@ async function initDB() {
       updated_at TIMESTAMP DEFAULT NOW()
     );
   `);
-await pool.query(`
-  CREATE TABLE IF NOT EXISTS students (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    roll_number INT,
-    contact TEXT,
-    class TEXT NOT NULL,
-    year TEXT,
-    term TEXT
-  );
-`);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS students (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      roll_number INT,
+      contact TEXT,
+      class TEXT NOT NULL,
+      year TEXT,
+      term TEXT
+    );
+  `);
 }
+
 initDB();
 
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-
-  const user = users.find(u => u.username === username && u.password === password);
-
-  if (user) {
-    res.json({ role: user.role });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
-});
-
-
-
-/* ---------------------------------------------
-   POST /submit  (MERGE like your JSON version)
-------------------------------------------------*/
+/* ---------------------------------------------------
+   MARKS SUBMIT
+----------------------------------------------------*/
 app.post("/submit", async (req, res) => {
-  console.log("POST /submit hit");
   const { className, year, term, marks } = req.body;
 
   try {
-    // For each student + each subject
     for (const [student, subjects] of Object.entries(marks)) {
       for (const [subject, score] of Object.entries(subjects)) {
         if (!score) continue;
 
-        // Check if exists
         const result = await pool.query(
           `SELECT id FROM marks
            WHERE class_name=$1 AND year=$2 AND term=$3
@@ -109,15 +132,11 @@ app.post("/submit", async (req, res) => {
         );
 
         if (result.rows.length > 0) {
-          // Update
           await pool.query(
-            `UPDATE marks
-             SET score=$1, updated_at=NOW()
-             WHERE id=$2`,
+            `UPDATE marks SET score=$1, updated_at=NOW() WHERE id=$2`,
             [score, result.rows[0].id]
           );
         } else {
-          // Insert
           await pool.query(
             `INSERT INTO marks
              (class_name, year, term, student_name, subject, score)
@@ -135,18 +154,16 @@ app.post("/submit", async (req, res) => {
   }
 });
 
-
-
-/* ---------------------------------------------
-   GET /api/classes  (returns JSON identical to before)
-------------------------------------------------*/
+/* ---------------------------------------------------
+   GET CLASSES
+----------------------------------------------------*/
 app.get("/api/classes", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM marks");
 
     const grouped = {};
 
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       const key = `${row.class_name}-${row.year}-${row.term}`;
 
       if (!grouped[key]) {
@@ -172,20 +189,14 @@ app.get("/api/classes", async (req, res) => {
   }
 });
 
-app.use((req, res, next) => {
-  console.log('Requested URL:', req.url);
-  next();
-});
-
-
-
-// Example using Express + PostgreSQL
-app.get('/api/students/:className', async (req, res) => {
+/* ---------------------------------------------------
+   STUDENTS ENDPOINTS
+----------------------------------------------------*/
+app.get("/api/students/:className", async (req, res) => {
   const className = req.params.className;
   const { year, term } = req.query;
 
   try {
-    // 1️⃣ Fetch student records from students table
     const studentResult = await pool.query(
       `SELECT id, name, roll_number AS roll, contact
        FROM students
@@ -196,7 +207,6 @@ app.get('/api/students/:className', async (req, res) => {
 
     let students = studentResult.rows;
 
-    // 2️⃣ Fetch student names from marks table (unique)
     const markResult = await pool.query(
       `SELECT DISTINCT student_name
        FROM marks
@@ -204,14 +214,11 @@ app.get('/api/students/:className', async (req, res) => {
       [className, year, term]
     );
 
-    const markNames = markResult.rows.map(r => r.student_name);
+    const markNames = markResult.rows.map((r) => r.student_name);
+    const studentNames = students.map((s) => s.name);
+    const missing = markNames.filter((n) => !studentNames.includes(n));
 
-    // 3️⃣ Find names missing in students table
-    const studentNames = students.map(s => s.name);
-    const missingNames = markNames.filter(n => !studentNames.includes(n));
-
-    // 4️⃣ Auto-insert missing names into students table
-    for (const name of missingNames) {
+    for (const name of missing) {
       const insert = await pool.query(
         `INSERT INTO students (name, roll_number, contact, class, year, term)
          VALUES ($1, NULL, NULL, $2, $3, $4)
@@ -222,18 +229,16 @@ app.get('/api/students/:className', async (req, res) => {
       students.push(insert.rows[0]);
     }
 
-    // 5️⃣ Return merged + sorted list
     students.sort((a, b) => (a.roll ?? 9999) - (b.roll ?? 9999));
-
     res.json(students);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database fetch failed' });
+    console.error("STUDENT ERROR:", err);
+    res.status(500).json({ error: "Database fetch failed" });
   }
 });
 
-app.post('/api/students', async (req, res) => {
+app.post("/api/students", async (req, res) => {
   const { name, roll, contact, className, year, term } = req.body;
 
   if (!name || !className || !year || !term) {
@@ -245,7 +250,7 @@ app.post('/api/students', async (req, res) => {
       `INSERT INTO students (name, roll_number, contact, class, year, term)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, name, roll_number AS roll, contact`,
-      [name, roll || null, contact || null, className, year, term]
+      [name, roll ?? null, contact ?? null, className, year, term]
     );
 
     res.json(result.rows[0]);
@@ -255,11 +260,11 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-
-
-/* --------------------------------------------- */
+/* ---------------------------------------------------
+   START SERVER
+----------------------------------------------------*/
+const PORT = process.env.PORT || 4040;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

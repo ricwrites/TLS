@@ -5,7 +5,7 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   root: ".",  // <-- points to your index.html
-  base: "/admin/",                           // <-- important for Render routing
+
   build: {
     outDir: path.resolve(__dirname, "dis"),  // <-- build goes here
     emptyOutDir: true

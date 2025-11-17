@@ -1,0 +1,50 @@
+body {
+background-color: beige;
+}
+
+.headimg {
+width: fit-content; 
+height: 150px; 
+margin-right:100px;
+float:left;
+}
+
+.pagetitle {
+color: #c00000;
+font-size: 48px;
+align-items: flex-start;
+right:400px;
+}
+
+.pagesubtitle {
+color: #c00000;
+font-size: 40px;
+top: 60px;
+position: absolute;
+display:block;
+left: 58%;
+}
+
+.header {
+display: flex;
+justify-content: center;
+
+}
+
+.navga {
+position: absolute;
+left: 4px;
+width: 200px;
+top: 200px;
+height: fit-content;
+border: solid 2px #c00000;
+align-items:center;
+gap: 10px;
+padding:8px;
+display: flex;
+font-size:20px;
+border-radius: 40px;
+justify-content: space-around;
+flex-direction: column;
+color:white;
+}

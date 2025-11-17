@@ -282,14 +282,6 @@ app.get("/api/payments", async (req, res) => {
   }
 });
 
-/* ---------------------------------------------------
-   START SERVER
-----------------------------------------------------*/
-const PORT = process.env.PORT || 4040;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 /* ---------------------------------------------------
    START SERVER

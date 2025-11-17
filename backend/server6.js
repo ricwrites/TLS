@@ -26,13 +26,21 @@ const pool = new Pool({
 
 const PORT = process.env.PORT || 4040;
 
-const cors = require('cors');
 app.use(cors({
   origin: 'https://learningsanctuarytura.onrender.com'
 }));
 
 app.use(bodyParser.json());
 
+//For static HTML pages
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+
+app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
+});
 /* ---------------------------------------------
    Create tables if they don't exist
 ------------------------------------------------*/
@@ -65,13 +73,6 @@ await pool.query(`
 initDB();
 
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/public/login.html'));
-});
-
-
-
-
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -83,6 +84,7 @@ app.post('/login', (req, res) => {
     res.status(401).json({ error: 'Invalid credentials' });
   }
 });
+
 
 
 /* ---------------------------------------------
@@ -175,10 +177,6 @@ app.use((req, res, next) => {
   next();
 });
 
-//For static HTML pages
-app.use(express.static(path.join(__dirname, '../frontend/public')));
-
-app.use('/admin', express.static(path.join(__dirname, '../frontend/dis')));
 
 
 // Example using Express + PostgreSQL

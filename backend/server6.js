@@ -46,10 +46,7 @@ app.use(bodyParser.json());
 const adminPath = path.join(__dirname, "../frontend/dis");
 app.use("/admin", express.static(adminPath, { index: "index.html" }));
 
-// SPA fallback: any /admin/* route serves React index.html
-app.get("/admin/*", (req, res) => {
-  res.sendFile(path.join(adminPath, "index.html"));
-});
+
 
 /* ---------------------------------------------------
    TEACHER PAGES + LOGIN

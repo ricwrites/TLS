@@ -107,6 +107,23 @@ async function initDB() {
 
 initDB();
 
+
+app.post("/api/payments", async (req, res) => {
+  try {
+    const { type, amount, category, comment } = req.body;
+    const created_by = "admin"; // or get from session / auth
+    const result = await pool.query(
+      `INSERT INTO payments (type, amount, category, comment, created_by)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [type, amount, category, comment, created_by]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 /* ---------------------------------------------------
    MARKS SUBMIT
 ----------------------------------------------------*/
@@ -253,6 +270,18 @@ app.post("/api/students", async (req, res) => {
     res.status(500).json({ error: "Database insert failed" });
   }
 });
+
+// --- GET: fetch all payments ---
+app.get("/api/payments", async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM payments ORDER BY date DESC`);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 
 /* ---------------------------------------------------
    START SERVER

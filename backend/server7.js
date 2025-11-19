@@ -22,6 +22,7 @@ const users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
    POSTGRES
 ----------------------------------------------------*/
 const { Pool } = pg;
+
 const pool = new Pool({
   connectionString: process.env.DB_URL,
   ssl: { rejectUnauthorized: false }
@@ -30,30 +31,35 @@ const pool = new Pool({
 /* ---------------------------------------------------
    MIDDLEWARE
 ----------------------------------------------------*/
+
 app.use(cors({
-  origin: [
-    "https://learningsanctuarytura.onrender.com",
-    "https://tls-server.com"
-  ],
+  origin: "https://learningsanctuarytura.onrender.com",
   methods: ["GET", "POST"]
 }));
 
 app.use(bodyParser.json());
 
 /* ---------------------------------------------------
-   REACT ADMIN SPA
-----------------------------------------------------*/
-const adminPath = path.join(__dirname, "../frontend/dis");
-app.use("/admin", express.static(adminPath, { index: "index.html" }));
-
-
-
-/* ---------------------------------------------------
-   TEACHER PAGES + LOGIN
+   STATIC FILES
+   (Teacher pages + login)
 ----------------------------------------------------*/
 const publicPath = path.join(__dirname, "../frontend/public");
 app.use(express.static(publicPath));
 
+/* ---------------------------------------------------
+   REACT ADMIN APP
+----------------------------------------------------*/
+const adminPath = path.join(__dirname, "../frontend/dis");
+app.use("/admin", express.static(adminPath));
+
+// ⭐ IMPORTANT: SPA fallback
+app.get("/admin/*", (req, res) => {
+  res.sendFile(path.join(adminPath, "index.html"));
+});
+
+/* ---------------------------------------------------
+   ROOT → LOGIN PAGE
+----------------------------------------------------*/
 app.get("/", (req, res) => {
   res.sendFile(path.join(publicPath, "login.html"));
 });
@@ -147,6 +153,8 @@ app.post("/submit", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+
 
 /* ---------------------------------------------------
    GET CLASSES
@@ -262,3 +270,4 @@ const PORT = process.env.PORT || 4040;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

@@ -41,14 +41,6 @@ app.use(cors({
 app.use(bodyParser.json());
 
 /* ---------------------------------------------------
-   REACT ADMIN SPA
-----------------------------------------------------*/
-const adminPath = path.join(__dirname, "../frontend/dis");
-app.use("/admin", express.static(adminPath, { index: "index.html" }));
-
-
-
-/* ---------------------------------------------------
    TEACHER PAGES + LOGIN
 ----------------------------------------------------*/
 const publicPath = path.join(__dirname, "../frontend/public");
@@ -56,6 +48,18 @@ app.use(express.static(publicPath));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(publicPath, "login.html"));
+});
+
+/* ---------------------------------------------------
+   REACT ADMIN SPA
+----------------------------------------------------*/
+const adminPath = path.join(__dirname, "../frontend/dis");
+// Serve only the assets folder from React build
+app.use("/admin/assets", express.static(path.join(adminPath, "assets")));
+
+// React SPA entry
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(adminPath, "index.html"));
 });
 
 /* ---------------------------------------------------

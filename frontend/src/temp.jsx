@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Payments } from './payments.jsx';
-import { AdDashboard } from './dashboard.jsx';
+import { AdDashboard } from './dashboard2.jsx';
 
 
 
@@ -162,13 +162,13 @@ export const ReportCards = () => {
 };
 
 
+
 export function StudentDetails() {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [students, setStudents] = useState([]);
   const [activeStudent, setActiveStudent] = useState(null);
   const API_BASE = import.meta.env.VITE_API_BASE;
-
 
   const [formData, setFormData] = useState({
     name: '',
@@ -182,17 +182,27 @@ export function StudentDetails() {
 
   const currentYear = "2025";
   const currentTerm = "2";
-  
 
+  // ----------------------------
   // Fetch all classes
+  // ----------------------------
   useEffect(() => {
     fetch(`${API_BASE}/api/classes`)
       .then(res => res.json())
-      .then(data => setClasses(data))
+      .then(data => {
+        if (!Array.isArray(data)) {
+          console.error("Classes API did not return an array:", data);
+          setClasses([]);
+          return;
+        }
+        setClasses(data);
+      })
       .catch(err => console.error('Error fetching classes:', err));
   }, []);
 
-  // Update students list when class changes
+  // ----------------------------
+  // Fetch students for selected class
+  // ----------------------------
   useEffect(() => {
     if (!selectedClass) {
       setStudents([]);
@@ -201,9 +211,15 @@ export function StudentDetails() {
       return;
     }
 
-    fetch(`/api/students/${encodeURIComponent(selectedClass)}?year=${currentYear}&term=${currentTerm}`)
+    fetch(`${API_BASE}/api/students/${encodeURIComponent(selectedClass)}?year=${currentYear}&term=${currentTerm}`)
       .then(res => res.json())
       .then(data => {
+        if (!Array.isArray(data)) {
+          console.error("Expected array of students but got:", data);
+          setStudents([]);
+          return;
+        }
+
         const formatted = data.map(s => ({
           id: s.id,
           name: s.name,
@@ -211,9 +227,10 @@ export function StudentDetails() {
           fatherName: s.father_name || '',
           contact: s.contact || '',
           address: s.address || '',
-          dob: s.dob ? s.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
+          dob: s.dob ? s.dob.split("T")[0] : '',
           bloodType: s.blood_type || ''
         }));
+
         setStudents(formatted);
         setActiveStudent(null);
         setFormData({ name: '', motherName: '', fatherName: '', contact: '', address: '', dob: '', bloodType: '' });
@@ -231,13 +248,16 @@ export function StudentDetails() {
       fatherName: student?.fatherName || '',
       contact: student?.contact || '',
       address: student?.address || '',
-      dob: student?.dob ? student.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
+      dob: student?.dob || '',
       bloodType: student?.bloodType || ''
     });
   };
 
   const clearForm = () => selectStudent(null);
 
+  // ----------------------------
+  // Save or update student
+  // ----------------------------
   const saveStudent = async () => {
     if (!selectedClass || !formData.name || !formData.motherName || !formData.contact) {
       return alert("Please fill in Name, Mother's Name, Contact, and select a Class.");
@@ -274,7 +294,7 @@ export function StudentDetails() {
       const savedStudent = await res.json();
       alert(activeStudent ? "Student updated!" : "Student added!");
 
-      // Update students array immediately with DOB formatted for table/input
+      // Update students array with formatted DOB
       setStudents(prev => {
         const existing = prev.find(s => s.id === savedStudent.id);
         const formattedStudent = {
@@ -284,9 +304,7 @@ export function StudentDetails() {
           fatherName: savedStudent.father_name || existing?.fatherName || '',
           contact: savedStudent.contact || existing?.contact || '',
           address: savedStudent.address || existing?.address || '',
-          dob: savedStudent.dob
-        ? new Date(savedStudent.dob).toISOString().split('T')[0]  // YYYY-MM-DD
-        : existing?.dob ?? '', // ✅ YYYY-MM-DD
+          dob: savedStudent.dob ? savedStudent.dob.split("T")[0] : existing?.dob || '',
           bloodType: savedStudent.blood_type ?? existing?.bloodType ?? ''
         };
 
@@ -304,9 +322,12 @@ export function StudentDetails() {
     }
   };
 
+  // ----------------------------
+  // Render
+  // ----------------------------
   return (
     <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
-      {/* LEFT PANEL: FORM */}
+      {/* LEFT PANEL */}
       <div style={{ width: '40%', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
         <h2>{activeStudent ? 'Edit Student' : 'Add New Student'}</h2>
 
@@ -341,7 +362,7 @@ export function StudentDetails() {
         </div>
       </div>
 
-      {/* RIGHT PANEL: STUDENT LIST */}
+      {/* RIGHT PANEL */}
       <div style={{ width: '60%' }}>
         <h2>Student List</h2>
 

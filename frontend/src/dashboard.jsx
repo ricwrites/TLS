@@ -4,8 +4,7 @@ import { saveAs } from "file-saver";
 
 export const AdDashboard = ({ currentUser }) => {
   const [history, setHistory] = useState([]);
-  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
-
+  const API_BASE = import.meta.env.VITE_API_BASE;
 
 
 
@@ -121,7 +120,7 @@ export const AdDashboard = ({ currentUser }) => {
 
         for (const s of students) {
           try {
-            const paymentRes = await fetch(`/api/student-payments/${s.id}`);
+            const paymentRes = await fetch(`${API_BASE}/api/student-payments/${s.id}`);
             const payments = await paymentRes.json();
 
             if (Array.isArray(payments) && payments.length) {
@@ -188,7 +187,7 @@ export const AdDashboard = ({ currentUser }) => {
       const sheets = [];
 
       for (const staff of staffList) {
-        const res = await fetch(`/api/salary/${encodeURIComponent(staff)}`);
+        const res = await fetch(`${API_BASE}/api/salary/${encodeURIComponent(staff)}`);
         const payments = await res.json();
 
         if (Array.isArray(payments) && payments.length) {

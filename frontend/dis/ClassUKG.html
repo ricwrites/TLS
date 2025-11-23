@@ -89,6 +89,7 @@
    <button type="button" onclick="submitData()">Submit</button>
   </form>
 
+<script src= "config.js"></script>
   <script>
     const students = ["Aaron Chuangbo M. Sangma","Aaron Toijam Lyngdoh","Abhiraj Mazumdar","Adaiyo Chudoang A. Sangma","Afryana Twinsa T. Sangma","Agimik Tengsuat D. Sangma","Akiro Grika Ch Marak","Akshar Aditya Das","Akshara Saha","Amaia Askisa D. Shira","Amara Chiasa D. Sangma","Ammaia Katachisa K. Sangma","Amrik B. Marak","Anona Paske N. Sangma","Athalia Caelan R. Sangma","Athalia Ester Ch. Marak","Avnita Das","Aziel Chedoa N. Sangma","Beberachi Ahava Macdonald Momin","Castiel Arengh","Cheonsa R. Sangma","Deang Simsak Ch. Marak","Eutheos R. Sangma","Gabriella R. Marak","Gasa Gabrio Raksam Marak","Hope Rike A. Sangma","Iyan Ch. Momin","Joram Dilchong Ch. Marak","Kasae Miesha M. Sangma","Menon Ch. Marak","Mi Birong Nokrek Marak","Misarang Yoruba T. Sangma","Neli Achume D. Sangma","Nilasha Kundu","Nirav Bhardwaj","Rangkambe Mikta R. Marak","Saesha  Mishra","Sanaya Islam","Sara Christy Cheran Momin","Shrinidhi Prasad","Tanvi Hajong","Tejas Gupta","Viraaj Harlalka","Wedorik M. Sangma"];
 
@@ -205,10 +206,9 @@ function submitData() {
     marks: data
   };
 
-const baseURL = "https://tls-server.onrender.com";
 
 
-fetch(`${baseURL}/submit`, {
+fetch(`${API_BASE}/submit`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(payload)

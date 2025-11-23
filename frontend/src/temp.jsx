@@ -6,12 +6,15 @@ import { Payments } from './payments.jsx';
 import { AdDashboard } from './dashboard.jsx';
 
 
+
+
 export const ReportCards = () => {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
-  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
 
   
 
@@ -164,7 +167,8 @@ export function StudentDetails() {
   const [selectedClass, setSelectedClass] = useState('');
   const [students, setStudents] = useState([]);
   const [activeStudent, setActiveStudent] = useState(null);
-  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
 
   const [formData, setFormData] = useState({
     name: '',

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 export const Payments = () => {
   const [mode, setMode] = useState("");
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4040";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
 
 
   return (
@@ -36,7 +36,7 @@ function StudentPaymentUI() {
   const [students, setStudents] = useState([]);
   const [studentId, setStudentId] = useState("");
   const [payments, setPayments] = useState([]);
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4040";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
 
 
   const [form, setForm] = useState({
@@ -210,7 +210,7 @@ function StudentPaymentUI() {
 ============================================================ */
 function MiscPaymentUI() {
   const [expenses, setExpenses] = useState([]);
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4040";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
 
   const [form, setForm] = useState({
     date: "",

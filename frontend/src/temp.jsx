@@ -11,7 +11,7 @@ export const ReportCards = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4040";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
 
   
 
@@ -164,7 +164,7 @@ export function StudentDetails() {
   const [selectedClass, setSelectedClass] = useState('');
   const [students, setStudents] = useState([]);
   const [activeStudent, setActiveStudent] = useState(null);
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4040";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
 
   const [formData, setFormData] = useState({
     name: '',

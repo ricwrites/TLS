@@ -4,7 +4,7 @@ import { saveAs } from "file-saver";
 
 export const AdDashboard = ({ currentUser }) => {
   const [history, setHistory] = useState([]);
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4040";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://learningsanctuaryt.onrender.com";
 
 
 

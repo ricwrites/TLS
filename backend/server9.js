@@ -236,12 +236,9 @@ app.get("/api/classes", async (req, res) => {
 /* ---------------------------------------------------
    STUDENTS ENDPOINTS (report card related)
 ----------------------------------------------------*/
-// OLD (using :className in the path) - you can comment this out or remove
-// app.get("/api/students/:className", ...);
-
-// NEW: safe query-based version
-app.get("/api/students", async (req, res) => {
-  const { class: className, year, term } = req.query;
+app.get("/api/students/:className", async (req, res) => {
+  const className = decodeURIComponent(req.params.className);
+  const { year, term } = req.query;
 
   if (!className || !year || !term) {
     return res.status(400).json({ error: "Missing class, year, or term" });
@@ -257,13 +254,40 @@ app.get("/api/students", async (req, res) => {
       [className, year, term]
     );
 
-    res.json(studentResult.rows);
+    let students = studentResult.rows;
+
+    const markResult = await pool.query(
+      `SELECT DISTINCT student_name
+       FROM marks
+       WHERE class_name = $1 AND year = $2 AND term = $3`,
+      [className, year, term]
+    );
+
+    const markNames = markResult.rows.map(r => r.student_name);
+    const studentNames = students.map(s => s.name);
+
+    const missing = markNames.filter(n => !studentNames.includes(n));
+
+    for (const name of missing) {
+      const insert = await pool.query(
+        `INSERT INTO students (name, roll_number, contact, address, class_name, year, term)
+         VALUES ($1, NULL, NULL, NULL, $2, $3, $4)
+         RETURNING id, name, roll_number AS roll, contact, address,
+                   dob, blood_type, mother_name, father_name`,
+        [name, className, year, term]
+      );
+
+      students.push(insert.rows[0]);
+    }
+
+    students.sort((a, b) => (a.roll ?? 9999) - (b.roll ?? 9999));
+    res.json(students);
+
   } catch (err) {
     console.error("STUDENT ERROR:", err);
     res.status(500).json({ error: "Database fetch failed" });
   }
 });
-
 
 app.post("/api/students", async (req, res) => {
   const body = req.body;

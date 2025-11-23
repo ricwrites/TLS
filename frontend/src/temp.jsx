@@ -162,252 +162,196 @@ export const ReportCards = () => {
 };
 
 
-
-export function StudentDetails() {
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
+export function StudentDetails({ selectedClass, year, term }) {
   const [students, setStudents] = useState([]);
-  const [activeStudent, setActiveStudent] = useState(null);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [studentData, setStudentData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const API_BASE = import.meta.env.VITE_API_BASE;
 
-  const [formData, setFormData] = useState({
-    name: '',
-    motherName: '',
-    fatherName: '',
-    contact: '',
-    address: '',
-    dob: '',
-    bloodType: ''
-  });
 
-  const currentYear = "2025";
-  const currentTerm = "2";
+  // Fetch students whenever class/year/term changes
+  const fetchStudents = async () => {
+    if (!selectedClass || !year || !term) return;
 
-  // ----------------------------
-  // Fetch all classes
-  // ----------------------------
-  useEffect(() => {
-    fetch(`${API_BASE}/api/classes`)
-      .then(res => res.json())
-      .then(data => {
-        if (!Array.isArray(data)) {
-          console.error("Classes API did not return an array:", data);
-          setClasses([]);
-          return;
-        }
-        setClasses(data);
-      })
-      .catch(err => console.error('Error fetching classes:', err));
-  }, []);
-
-  // ----------------------------
-  // Fetch students for selected class
-  // ----------------------------
-  useEffect(() => {
-    if (!selectedClass) {
-      setStudents([]);
-      setActiveStudent(null);
-      setFormData({ name: '', motherName: '', fatherName: '', contact: '', address: '', dob: '', bloodType: '' });
-      return;
-    }
-
-    fetch(`${API_BASE}/api/students/${encodeURIComponent(selectedClass)}?year=${currentYear}&term=${currentTerm}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!Array.isArray(data)) {
-          console.error("Expected array of students but got:", data);
-          setStudents([]);
-          return;
-        }
-
-        const formatted = data.map(s => ({
-          id: s.id,
-          name: s.name,
-          motherName: s.mother_name || '',
-          fatherName: s.father_name || '',
-          contact: s.contact || '',
-          address: s.address || '',
-          dob: s.dob ? s.dob.split("T")[0] : '',
-          bloodType: s.blood_type || ''
-        }));
-
-        setStudents(formatted);
-        setActiveStudent(null);
-        setFormData({ name: '', motherName: '', fatherName: '', contact: '', address: '', dob: '', bloodType: '' });
-      })
-      .catch(err => console.error('Error fetching students:', err));
-  }, [selectedClass]);
-
-  const updateForm = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const selectStudent = (student) => {
-    setActiveStudent(student || null);
-    setFormData({
-      name: student?.name || '',
-      motherName: student?.motherName || '',
-      fatherName: student?.fatherName || '',
-      contact: student?.contact || '',
-      address: student?.address || '',
-      dob: student?.dob || '',
-      bloodType: student?.bloodType || ''
-    });
-  };
-
-  const clearForm = () => selectStudent(null);
-
-  // ----------------------------
-  // Save or update student
-  // ----------------------------
-  const saveStudent = async () => {
-    if (!selectedClass || !formData.name || !formData.motherName || !formData.contact) {
-      return alert("Please fill in Name, Mother's Name, Contact, and select a Class.");
-    }
-
+    setLoading(true);
+    setError(null);
     try {
-      const bodyData = {
-        ...formData,
-        className: selectedClass,
-        year: currentYear,
-        term: currentTerm
-      };
+      const res = await fetch(
+        `${API_BASE}/api/students?class=${encodeURIComponent(
+          selectedClass
+        )}&year=${year}&term=${term}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch students");
+      const data = await res.json();
+      setStudents(data);
 
-      let res;
-      if (activeStudent?.id) {
-        res = await fetch(`${API_BASE}/api/students/${activeStudent.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyData)
-        });
-      } else {
-        res = await fetch(`${API_BASE}/api/students`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyData)
-        });
+      // If previously selected student exists, refresh their data
+      if (selectedStudentId) {
+        const stillExists = data.find((s) => s.id === Number(selectedStudentId));
+        if (stillExists) setStudentData(stillExists);
+        else setSelectedStudentId(null);
       }
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(`HTTP ${res.status}: ${JSON.stringify(errorData)}`);
-      }
-
-      const savedStudent = await res.json();
-      alert(activeStudent ? "Student updated!" : "Student added!");
-
-      // Update students array with formatted DOB
-      setStudents(prev => {
-        const existing = prev.find(s => s.id === savedStudent.id);
-        const formattedStudent = {
-          id: savedStudent.id,
-          name: savedStudent.name,
-          motherName: savedStudent.mother_name || existing?.motherName || '',
-          fatherName: savedStudent.father_name || existing?.fatherName || '',
-          contact: savedStudent.contact || existing?.contact || '',
-          address: savedStudent.address || existing?.address || '',
-          dob: savedStudent.dob ? savedStudent.dob.split("T")[0] : existing?.dob || '',
-          bloodType: savedStudent.blood_type ?? existing?.bloodType ?? ''
-        };
-
-        if (activeStudent?.id) {
-          return prev.map(s => s.id === activeStudent.id ? formattedStudent : s);
-        } else {
-          return [...prev, formattedStudent];
-        }
-      });
-
-      clearForm();
     } catch (err) {
-      console.error("Save error:", err);
-      alert(`Failed to save student: ${err.message}`);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ----------------------------
-  // Render
-  // ----------------------------
+  useEffect(() => {
+    fetchStudents();
+  }, [selectedClass, year, term]);
+
+  // Load selected student's details into form
+  useEffect(() => {
+    const student = students.find((s) => s.id === Number(selectedStudentId));
+    if (student) setStudentData(student);
+    else setStudentData({});
+  }, [selectedStudentId, students]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setStudentData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!selectedStudentId) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/students/${selectedStudentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: studentData.name,
+          roll: studentData.roll,
+          contact: studentData.contact,
+          address: studentData.address,
+          motherName: studentData.mother_name,
+          fatherName: studentData.father_name,
+          dob: studentData.dob,
+          bloodType: studentData.blood_type,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update student");
+
+      // After saving, refresh the students list so dropdown updates
+      await fetchStudents();
+
+      alert("Student updated successfully!");
+    } catch (err) {
+      alert("Error updating student: " + err.message);
+    }
+  };
+
+  if (loading) return <p>Loading students...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
-    <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
-      {/* LEFT PANEL */}
-      <div style={{ width: '40%', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-        <h2>{activeStudent ? 'Edit Student' : 'Add New Student'}</h2>
+    <div>
+      <h2>Students for {selectedClass} ({year}, {term})</h2>
 
-        <label>Name:</label>
-        <input name="name" value={formData.name} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+      <select
+        value={selectedStudentId || ""}
+        onChange={(e) => setSelectedStudentId(e.target.value)}
+      >
+        <option value="">Select a student</option>
+        {students.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.roll ? `${s.roll} - ` : ""}{s.name}
+          </option>
+        ))}
+      </select>
 
-        <label>Mother's Name:</label>
-        <input name="motherName" value={formData.motherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Father's Name:</label>
-        <input name="fatherName" value={formData.fatherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Contact:</label>
-        <input name="contact" value={formData.contact} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Address:</label>
-        <input name="address" value={formData.address} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Date of Birth:</label>
-        <input type="date" name="dob" value={formData.dob} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Blood Type:</label>
-        <input name="bloodType" value={formData.bloodType} onChange={updateForm} placeholder="A+, O-, B+, etc." style={{ width: '100%', marginBottom: '10px' }} />
-
-        <div style={{ marginTop: '15px' }}>
-          <button onClick={saveStudent} style={{ padding: '10px 15px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
-            {activeStudent ? 'Save Changes' : 'Add Student'}
-          </button>
-          <button onClick={clearForm} style={{ marginLeft: '10px', padding: '10px 15px', cursor: 'pointer' }}>
-            Clear
-          </button>
+      {selectedStudentId && (
+        <div style={{ marginTop: "20px" }}>
+          <label>
+            Name:
+            <input
+              type="text"
+              name="name"
+              value={studentData.name || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            Roll:
+            <input
+              type="number"
+              name="roll"
+              value={studentData.roll || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            Contact:
+            <input
+              type="text"
+              name="contact"
+              value={studentData.contact || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            Address:
+            <input
+              type="text"
+              name="address"
+              value={studentData.address || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            Mother Name:
+            <input
+              type="text"
+              name="mother_name"
+              value={studentData.mother_name || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            Father Name:
+            <input
+              type="text"
+              name="father_name"
+              value={studentData.father_name || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            DOB:
+            <input
+              type="date"
+              name="dob"
+              value={studentData.dob || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <label>
+            Blood Type:
+            <input
+              type="text"
+              name="blood_type"
+              value={studentData.blood_type || ""}
+              onChange={handleChange}
+            />
+          </label>
+          <br />
+          <button onClick={handleSave}>Save</button>
         </div>
-      </div>
-
-      {/* RIGHT PANEL */}
-      <div style={{ width: '60%' }}>
-        <h2>Student List</h2>
-
-        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ marginBottom: '15px' }}>
-          <option value="">-- Select Class --</option>
-          {classes.map(c => (
-            <option key={`${c.className}-${c.year}-${c.term}`} value={c.className}>{c.className}</option>
-          ))}
-        </select>
-
-        <table border="1" cellPadding="8" width="100%">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Mother's Name</th>
-              <th>Father's Name</th>
-              <th>Contact</th>
-              <th>Address</th>
-              <th>DOB</th>
-              <th>Blood Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.length === 0 ? (
-              <tr><td colSpan="7" style={{ textAlign: 'center' }}>No students found</td></tr>
-            ) : (
-              students.map((s) => (
-                <tr key={s.id} onClick={() => selectStudent(s)} style={{ cursor: 'pointer' }}>
-                  <td>{s.name}</td>
-                  <td>{s.motherName}</td>
-                  <td>{s.fatherName}</td>
-                  <td>{s.contact}</td>
-                  <td>{s.address}</td>
-                  <td>{s.dob}</td>
-                  <td>{s.bloodType}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      )}
     </div>
   );
 }
-
 
 
 export const Dashboard = () => {

@@ -6,12 +6,13 @@
 
 
 <link rel = "stylesheet" href = "styletls.css">
-<header class = "header">
-<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1></header>
-<h2 class = "pagesubtitle">Tura</h2>
+
 
 </head>
 <body>
+<header class = "header">
+<img class="headimg" src = "./assets/TLS.jpg"> <h1 class ="pagetitle"> The Learning Sanctuary </h1></header>
+<h2 class = "pagesubtitle">Tura</h2>
 <div class = "navga">
 <div class= "login"><a class ="navlink" href = "ClassNur.html">Nursery</a></div>
 <div class = "login"><a class ="navlink">LKG</a></div>
@@ -182,12 +183,9 @@ function submitData() {
     term,
     marks: data
   };
-const baseURL =
-  window.location.hostname === 'localhost'
-    ? 'https://tls-server.onrender.com'
-    : 'https://tls-i91h.onrender.com';
 
-fetch(`${baseURL}/submit`, {
+
+ fetch('https://tls-server.onrender.com/submit', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(payload)

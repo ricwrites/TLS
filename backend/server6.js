@@ -24,7 +24,7 @@ const users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
 const { Pool } = pg;
 const pool = new Pool({
   connectionString: process.env.DB_URL,
-  ssl: { rejectUnauthorized: false }
+  //ssl: { rejectUnauthorized: false }
 });
 
 /* ---------------------------------------------------
@@ -33,9 +33,10 @@ const pool = new Pool({
 app.use(cors({
   origin: [
     "https://learningsanctuarytura.onrender.com",
-    "https://tls-server.com"
+    "https://tls-server.com",
+    "http://localhost:5173"
   ],
-  methods: ["GET", "POST"]
+  methods: ["GET", "POST","PATCH","PUT", "DELETE"]
 }));
 
 app.use(bodyParser.json());
@@ -83,6 +84,7 @@ app.post("/login", (req, res) => {
    DB INIT
 ----------------------------------------------------*/
 async function initDB() {
+  // MARKS TABLE (report cards)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS marks (
       id SERIAL PRIMARY KEY,
@@ -96,15 +98,58 @@ async function initDB() {
     );
   `);
 
+  // STUDENTS TABLE
   await pool.query(`
     CREATE TABLE IF NOT EXISTS students (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       roll_number INT,
       contact TEXT,
-      class TEXT NOT NULL,
+      address TEXT,
+      class_name TEXT,
+      year TEXT,
+      term TEXT,
+      mother_name TEXT,
+      father_name TEXT,
+      dob DATE,
+      blood_type TEXT
+    );
+  `);
+
+  // STUDENT PAYMENTS TABLE
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS student_payments (
+      id SERIAL PRIMARY KEY,
+      student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+      date DATE,
+      payment_method TEXT,
+      payment_type TEXT,
+      amount NUMERIC,
       year TEXT,
       term TEXT
+    );
+  `);
+
+  // MISC EXPENSES TABLE
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS misc_expenses (
+      id SERIAL PRIMARY KEY,
+      date DATE,
+      category TEXT,
+      description TEXT,
+      amount NUMERIC
+    );
+  `);
+
+  // SALARY PAYMENTS TABLE
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS salary_payments (
+      id SERIAL PRIMARY KEY,
+      staff_name TEXT,
+      date DATE,
+      month TEXT,
+      amount NUMERIC,
+      mode TEXT
     );
   `);
 }
@@ -112,7 +157,7 @@ async function initDB() {
 initDB();
 
 /* ---------------------------------------------------
-   MARKS SUBMIT
+   MARKS SUBMIT (report cards, untouched)
 ----------------------------------------------------*/
 app.post("/submit", async (req, res) => {
   const { className, year, term, marks } = req.body;
@@ -153,7 +198,7 @@ app.post("/submit", async (req, res) => {
 });
 
 /* ---------------------------------------------------
-   GET CLASSES
+   GET CLASSES (report cards, untouched)
 ----------------------------------------------------*/
 app.get("/api/classes", async (req, res) => {
   try {
@@ -188,17 +233,22 @@ app.get("/api/classes", async (req, res) => {
 });
 
 /* ---------------------------------------------------
-   STUDENTS ENDPOINTS
+   STUDENTS ENDPOINTS (report card related)
 ----------------------------------------------------*/
 app.get("/api/students/:className", async (req, res) => {
-  const className = req.params.className;
+  const className = decodeURIComponent(req.params.className);
   const { year, term } = req.query;
+
+  if (!className || !year || !term) {
+    return res.status(400).json({ error: "Missing class, year, or term" });
+  }
 
   try {
     const studentResult = await pool.query(
-      `SELECT id, name, roll_number AS roll, contact
+      `SELECT id, name, roll_number AS roll, contact, address, mother_name, father_name,
+              dob, blood_type
        FROM students
-       WHERE class = $1 AND year = $2 AND term = $3
+       WHERE class_name = $1 AND year = $2 AND term = $3
        ORDER BY roll_number`,
       [className, year, term]
     );
@@ -212,15 +262,17 @@ app.get("/api/students/:className", async (req, res) => {
       [className, year, term]
     );
 
-    const markNames = markResult.rows.map((r) => r.student_name);
-    const studentNames = students.map((s) => s.name);
-    const missing = markNames.filter((n) => !studentNames.includes(n));
+    const markNames = markResult.rows.map(r => r.student_name);
+    const studentNames = students.map(s => s.name);
+
+    const missing = markNames.filter(n => !studentNames.includes(n));
 
     for (const name of missing) {
       const insert = await pool.query(
-        `INSERT INTO students (name, roll_number, contact, class, year, term)
-         VALUES ($1, NULL, NULL, $2, $3, $4)
-         RETURNING id, name, roll_number AS roll, contact`,
+        `INSERT INTO students (name, roll_number, contact, address, class_name, year, term)
+         VALUES ($1, NULL, NULL, NULL, $2, $3, $4)
+         RETURNING id, name, roll_number AS roll, contact, address,
+                   dob, blood_type, mother_name, father_name`,
         [name, className, year, term]
       );
 
@@ -237,26 +289,340 @@ app.get("/api/students/:className", async (req, res) => {
 });
 
 app.post("/api/students", async (req, res) => {
-  const { name, roll, contact, className, year, term } = req.body;
+  const body = req.body;
 
-  if (!name || !className || !year || !term) {
+  if (!body.name || !body.className || !body.year || !body.term) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
+const student = {
+  name: body.name,
+  roll_number: body.roll ?? null,
+  contact: body.contact ?? null,
+  address: body.address ?? null,
+  class_name: body.className,
+  year: body.year,
+  term: body.term,
+  mother_name: body.motherName ?? null,
+  father_name: body.fatherName ?? null,
+  dob: body.dob ?? null,
+  blood_type: body.bloodType ?? null
+};
+
+
   try {
     const result = await pool.query(
-      `INSERT INTO students (name, roll_number, contact, class, year, term)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, name, roll_number AS roll, contact`,
-      [name, roll ?? null, contact ?? null, className, year, term]
+  `INSERT INTO students 
+    (name, roll_number, contact, address, class_name, year, term,
+     mother_name, father_name, dob, blood_type)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+   RETURNING id, name, roll_number AS roll, contact, address,
+             mother_name, father_name, dob, blood_type`,
+  [
+    student.name,
+    student.roll_number,
+    student.contact,
+    student.address,
+    student.class_name,
+    student.year,
+    student.term,
+    student.mother_name,
+    student.father_name,
+    student.dob,
+    student.blood_type
+  ]
+);
+
+
+    res.json(result.rows[0]);
+
+  } catch (err) {
+    console.error("Insert student error:", err.message, err.detail, err.stack);
+    return res.status(500).json({
+      error: "Database insert failed",
+      message: err.message,
+      detail: err.detail,
+    });
+  }
+});
+
+app.patch("/api/students/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, motherName, fatherName, contact, address, dob, bloodType } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE students
+       SET name=$1,
+           mother_name=$2,
+           father_name=$3,
+           contact=$4,
+           address=$5,
+           dob=$6,
+           blood_type=$7
+       WHERE id=$8
+       RETURNING id, name, roll_number AS roll, contact, address, mother_name, father_name, dob, blood_type`,
+      [name, motherName, fatherName, contact, address, dob, bloodType, id]
     );
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error("Insert student error:", err);
-    res.status(500).json({ error: "Database insert failed" });
+    console.error("Update student error:", err);
+    res.status(500).json({ error: "Database update failed", message: err.message });
   }
 });
+
+
+/* ---------------------------------------------------
+   STUDENT PAYMENTS
+----------------------------------------------------*/
+app.get("/api/student-payments/:studentId", async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM student_payments WHERE student_id=$1 ORDER BY date DESC`,
+      [studentId]
+    );
+
+    res.json(result.rows.map(p => ({
+      id: p.id,
+      studentId: p.student_id,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      paymentMethod: p.payment_method,
+      paymentType: p.payment_type,
+      amount: Number(p.amount),
+      year: p.year,
+      term: p.term
+    })));
+  } catch (err) {
+    console.error("Fetch student payments error:", err);
+    res.status(500).json({ error: "Database fetch failed", message: err.message });
+  }
+});
+
+// POST /api/student-payments
+app.post("/api/student-payments", async (req, res) => {
+  const { studentId, date, paymentMethod, paymentType, amount, year, term } = req.body;
+
+  try {
+    await pool.query(
+      `INSERT INTO student_payments
+       (student_id, date, payment_method, payment_type, amount, year, term)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [studentId, date, paymentMethod, paymentType, amount, year, term]
+    );
+
+    // Fetch all payments for the student to display immediately
+    const paymentsResult = await pool.query(
+      `SELECT * FROM student_payments WHERE student_id=$1 ORDER BY date DESC`,
+      [studentId]
+    );
+
+    const payments = paymentsResult.rows.map(p => ({
+      id: p.id,
+      studentId: p.student_id,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      paymentMethod: p.payment_method,
+      paymentType: p.payment_type,
+      amount: Number(p.amount),
+      year: p.year,
+      term: p.term
+    }));
+
+    res.json({ studentId, payments }); // send back full payments for immediate table update
+  } catch (err) {
+    console.error("Insert student payment error:", err);
+    res.status(500).json({ error: "Database insert failed", message: err.message });
+  }
+});
+
+/* ---------------------------------------------------
+   MISC PAYMENTS
+----------------------------------------------------*/
+app.get("/api/misc-expenses", async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM misc_expenses ORDER BY date DESC`);
+    res.json(result.rows.map(p => ({
+      id: p.id,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      category: p.category,
+      description: p.description,
+      amount: Number(p.amount)
+    })));
+  } catch (err) {
+    console.error("Fetch misc expenses error:", err);
+    res.status(500).json({ error: "Database fetch failed", message: err.message });
+  }
+});
+
+app.post("/api/misc-expenses", async (req, res) => {
+  const { date, category, description, amount } = req.body;
+
+  try {
+    await pool.query(
+      `INSERT INTO misc_expenses (date, category, description, amount)
+       VALUES ($1,$2,$3,$4)`,
+      [date, category, description, amount]
+    );
+
+    // Return full list for immediate table update
+    const result = await pool.query(`SELECT * FROM misc_expenses ORDER BY date DESC`);
+    const expenses = result.rows.map(p => ({
+      id: p.id,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      category: p.category,
+      description: p.description,
+      amount: Number(p.amount)
+    }));
+
+    res.json(expenses);
+  } catch (err) {
+    console.error("Insert misc expense error:", err);
+    res.status(500).json({ error: "Database insert failed", message: err.message });
+  }
+});
+
+
+/* ---------------------------------------------------
+   SALARY PAYMENTS
+----------------------------------------------------*/
+app.get("/api/salary/:staffName", async (req, res) => {
+  const { staffName } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT * FROM salary_payments WHERE staff_name=$1 ORDER BY date DESC`,
+      [staffName]
+    );
+    res.json(result.rows.map(p => ({
+      id: p.id,
+      staffName: p.staff_name,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      month: p.month,
+      amount: Number(p.amount),
+      mode: p.mode
+    })));
+  } catch (err) {
+    console.error("Fetch salary payments error:", err);
+    res.status(500).json({ error: "Database fetch failed", message: err.message });
+  }
+});
+
+app.post("/api/salary", async (req, res) => {
+  const { staff_name, date, month, amount, mode } = req.body;
+
+  try {
+    await pool.query(
+      `INSERT INTO salary_payments (staff_name, date, month, amount, mode)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [staff_name, date, month, amount, mode]
+    );
+
+    // Return all salary payments for this staff member
+    const result = await pool.query(
+      `SELECT * FROM salary_payments WHERE staff_name=$1 ORDER BY date DESC`,
+      [staff_name]
+    );
+
+    const salaries = result.rows.map(p => ({
+      id: p.id,
+      staffName: p.staff_name,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      month: p.month,
+      amount: Number(p.amount),
+      mode: p.mode
+    }));
+
+    res.json(salaries);
+  } catch (err) {
+    console.error("Insert salary payment error:", err);
+    res.status(500).json({ error: "Database insert failed", message: err.message });
+  }
+});
+
+
+// PATCH /api/student-payments/:id
+// PATCH /api/student-payments/:id
+app.patch("/api/student-payments/:id", async (req, res) => {
+  const { id } = req.params;
+  const { date, paymentMethod, paymentType, amount, year, term } = req.body;
+
+  try {
+    const updateResult = await pool.query(
+      `UPDATE student_payments
+       SET date=$1, payment_method=$2, payment_type=$3, amount=$4, year=$5, term=$6
+       WHERE id=$7 RETURNING student_id`,
+      [date, paymentMethod, paymentType, amount, year, term, id]
+    );
+
+    if (updateResult.rows.length === 0)
+      return res.status(404).json({ error: "Payment not found" });
+
+    const studentId = updateResult.rows[0].student_id;
+
+    const paymentsResult = await pool.query(
+      `SELECT * FROM student_payments WHERE student_id=$1 ORDER BY date DESC`,
+      [studentId]
+    );
+
+    const payments = paymentsResult.rows.map(p => ({
+      id: p.id,
+      studentId: p.student_id,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      paymentMethod: p.payment_method,
+      paymentType: p.payment_type,
+      amount: Number(p.amount),
+      year: p.year,
+      term: p.term
+    }));
+
+    res.json({ studentId, payments });
+  } catch (err) {
+    console.error("Update student payment error:", err);
+    res.status(500).json({ error: "Database update failed", message: err.message });
+  }
+});
+
+// DELETE /api/student-payments/:id
+app.delete("/api/student-payments/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleteResult = await pool.query(
+      `DELETE FROM student_payments WHERE id=$1 RETURNING student_id`,
+      [id]
+    );
+
+    if (deleteResult.rows.length === 0)
+      return res.status(404).json({ error: "Payment not found" });
+
+    const studentId = deleteResult.rows[0].student_id;
+
+    const paymentsResult = await pool.query(
+      `SELECT * FROM student_payments WHERE student_id=$1 ORDER BY date DESC`,
+      [studentId]
+    );
+
+    const payments = paymentsResult.rows.map(p => ({
+      id: p.id,
+      studentId: p.student_id,
+      date: p.date ? p.date.toISOString().split("T")[0] : null,
+      paymentMethod: p.payment_method,
+      paymentType: p.payment_type,
+      amount: Number(p.amount),
+      year: p.year,
+      term: p.term
+    }));
+
+    res.json({ studentId, payments });
+  } catch (err) {
+    console.error("Delete student payment error:", err);
+    res.status(500).json({ error: "Database delete failed", message: err.message });
+  }
+});
+
+
+
 
 /* ---------------------------------------------------
    START SERVER
@@ -266,3 +632,4 @@ const PORT = process.env.PORT || 4040;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

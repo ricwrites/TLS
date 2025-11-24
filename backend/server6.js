@@ -503,8 +503,13 @@ app.post("/api/student-payments/from-manual", async (req, res) => {
     res.json({ studentId, studentName, payments });
 
   } catch (err) {
-    console.error("Manu
-
+    console.error("Manual payment error:", err);
+    res.status(500).json({
+      error: "Database error",
+      message: err.message
+    });
+  }
+});
 
 
 /* ---------------------------------------------------

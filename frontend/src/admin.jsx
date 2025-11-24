@@ -14,10 +14,10 @@ const AdminPage = () => (
     {/* Page content changes below */}
     <div className="page-content">
       <Routes>
-        <Route path="/reportcards" element={<ReportCards />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/studentdetails" element={<StudentDetails />} />
-        <Route path="/payments" element={<PaymentTracker />} />
+        <Route path="reportcards" element={<ReportCards />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="studentdetails" element={<StudentDetails />} />
+        <Route path="payments" element={<PaymentTracker />} />
         <Route path="/" element={<ToRoot />} /> {/* Default page */}
       </Routes>
     </div>

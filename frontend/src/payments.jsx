@@ -49,49 +49,48 @@ function StudentPaymentUI() {
      SUBMIT PAYMENT
   ============================== */
   const submitPayment = async () => {
-    if (!form.studentName || !form.className || !form.amount || !form.payment_type) {
-      return alert("Please fill class, student name, amount, and type.");
-    }
+  if (!form.studentName || !form.className || !form.amount || !form.payment_type) {
+    return alert("Please fill class, student name, amount, and type.");
+  }
 
-    const body = {
-      className: form.className.trim(),
-      studentName: form.studentName.trim(),
-      date: form.date || new Date().toISOString().split("T")[0],
-      paymentMethod: form.payment_method,
-      paymentType: form.payment_type,
-      amount: Number(form.amount),
-      year,
-      term
-    };
-
-    try {
-      const res = await fetch(`${API_BASE}/api/student-payments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      const saved = await res.json();
-
-      if (Array.isArray(saved.payments)) {
-        setPayments(saved.payments);
-      }
-
-      // reset
-      setForm({
-        className: "",
-        studentName: "",
-        date: "",
-        payment_method: "",
-        payment_type: "",
-        amount: ""
-      });
-
-    } catch (err) {
-      console.error("Error submitting payment:", err);
-      alert("Failed to submit payment.");
-    }
+  const body = {
+    className: form.className.trim(),
+    studentName: form.studentName.trim(),
+    date: form.date || new Date().toISOString().split("T")[0],
+    paymentMethod: form.payment_method,
+    paymentType: form.payment_type,
+    amount: Number(form.amount),
+    year,
+    term
   };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/student-payments/from-manual`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    setPayments(data.payments || []);
+
+    // reset form
+    setForm({
+      className: "",
+      studentName: "",
+      date: "",
+      payment_method: "",
+      payment_type: "",
+      amount: ""
+    });
+
+  } catch (err) {
+    console.error("Error submitting payment:", err);
+    alert("Failed to submit payment.");
+  }
+};
+
 
   return (
     <div style={{ display: "flex", gap: 20 }}>

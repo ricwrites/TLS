@@ -162,8 +162,7 @@ export const ReportCards = () => {
 
 
 
-
-const API_BASE = import.meta.env.VITE_API_BASE; // keep your environment variable
+const API_BASE = import.meta.env.VITE_API_BASE; // <-- environment variable
 
 export function StudentDetails() {
   const [classes, setClasses] = useState([]);
@@ -200,7 +199,7 @@ export function StudentDetails() {
       return;
     }
 
-    fetch(`${API_BASE}/api/students/${encodeURIComponent(selectedClass)}?year=${currentYear}&term=${currentTerm}`)
+    fetch(`${API_BASE}/api/students?class=${encodeURIComponent(selectedClass)}&year=${currentYear}&term=${currentTerm}`)
       .then(res => res.json())
       .then(data => {
         const formatted = data.map(s => ({
@@ -210,7 +209,7 @@ export function StudentDetails() {
           fatherName: s.father_name || '',
           contact: s.contact || '',
           address: s.address || '',
-          dob: s.dob ? s.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
+          dob: s.dob ? s.dob.split("T")[0] : '',
           bloodType: s.blood_type || ''
         }));
         setStudents(formatted);
@@ -230,7 +229,7 @@ export function StudentDetails() {
       fatherName: student?.fatherName || '',
       contact: student?.contact || '',
       address: student?.address || '',
-      dob: student?.dob ? student.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
+      dob: student?.dob || '',
       bloodType: student?.bloodType || ''
     });
   };
@@ -273,19 +272,16 @@ export function StudentDetails() {
       const savedStudent = await res.json();
       alert(activeStudent ? "Student updated!" : "Student added!");
 
-      // Update students array immediately with DOB formatted for table/input
       setStudents(prev => {
         const existing = prev.find(s => s.id === savedStudent.id);
         const formattedStudent = {
           id: savedStudent.id,
           name: savedStudent.name,
-          motherName: savedStudent.mother_name || existing?.motherName || '',
-          fatherName: savedStudent.father_name || existing?.fatherName || '',
-          contact: savedStudent.contact || existing?.contact || '',
-          address: savedStudent.address || existing?.address || '',
-          dob: savedStudent.dob
-        ? new Date(savedStudent.dob).toISOString().split('T')[0]  // YYYY-MM-DD
-        : existing?.dob ?? '', // ✅ YYYY-MM-DD
+          motherName: savedStudent.mother_name ?? existing?.motherName ?? '',
+          fatherName: savedStudent.father_name ?? existing?.fatherName ?? '',
+          contact: savedStudent.contact ?? existing?.contact ?? '',
+          address: savedStudent.address ?? existing?.address ?? '',
+          dob: savedStudent.dob ? new Date(savedStudent.dob).toISOString().split('T')[0] : existing?.dob ?? '',
           bloodType: savedStudent.blood_type ?? existing?.bloodType ?? ''
         };
 
@@ -308,28 +304,20 @@ export function StudentDetails() {
       {/* LEFT PANEL: FORM */}
       <div style={{ width: '40%', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
         <h2>{activeStudent ? 'Edit Student' : 'Add New Student'}</h2>
-
-        <label>Name:</label>
-        <input name="name" value={formData.name} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Mother's Name:</label>
-        <input name="motherName" value={formData.motherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Father's Name:</label>
-        <input name="fatherName" value={formData.fatherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Contact:</label>
-        <input name="contact" value={formData.contact} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Address:</label>
-        <input name="address" value={formData.address} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Date of Birth:</label>
-        <input type="date" name="dob" value={formData.dob} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
-
-        <label>Blood Type:</label>
-        <input name="bloodType" value={formData.bloodType} onChange={updateForm} placeholder="A+, O-, B+, etc." style={{ width: '100%', marginBottom: '10px' }} />
-
+        {["name","motherName","fatherName","contact","address","dob","bloodType"].map(field => (
+          <>
+            <label>{field === "dob" ? "Date of Birth" : field.replace(/([A-Z])/g, ' $1')}</label>
+            <input
+              key={field}
+              name={field}
+              type={field === "dob" ? "date" : "text"}
+              value={formData[field]}
+              onChange={updateForm}
+              style={{ width: '100%', marginBottom: '10px' }}
+              placeholder={field === "bloodType" ? "A+, O-, B+, etc." : ""}
+            />
+          </>
+        ))}
         <div style={{ marginTop: '15px' }}>
           <button onClick={saveStudent} style={{ padding: '10px 15px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
             {activeStudent ? 'Save Changes' : 'Add Student'}

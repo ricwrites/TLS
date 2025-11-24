@@ -26,20 +26,15 @@ export const Payments = () => {
 };
 
 /* ============================================================
-   STUDENT PAYMENTS
-============================================================ */
-/* ============================================================
-   STUDENT PAYMENTS (FULLY REWRITTEN & FIXED)
+   STUDENT PAYMENTS — SIMPLIFIED VERSION
+   - No class dropdown
+   - No student dropdown
+   - Manual student name input
 ============================================================ */
 function StudentPaymentUI() {
   const API_BASE = import.meta.env.VITE_API_BASE;
 
-  const [classes, setClasses] = useState([]);
-  const [selectedClassId, setSelectedClassId] = useState("");
-
-  const [students, setStudents] = useState([]);
-  const [studentId, setStudentId] = useState("");
-
+  const [studentName, setStudentName] = useState("");
   const [payments, setPayments] = useState([]);
 
   const [form, setForm] = useState({
@@ -53,67 +48,32 @@ function StudentPaymentUI() {
   const term = "2";
 
   /* ============================================================
-     1. LOAD ALL CLASSES
+     LOAD ALL PAYMENTS FOR THIS STUDENT
   ============================================================ */
   useEffect(() => {
-    fetch(`${API_BASE}/api/classes`)
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setClasses(data);
-      })
-      .catch(err => console.error("Error fetching classes:", err));
-  }, []);
-
-  /* ============================================================
-     2. LOAD STUDENTS WHEN CLASS CHANGES
-  ============================================================ */
-  useEffect(() => {
-    if (!selectedClassId) {
-      setStudents([]);
-      setStudentId("");
-      return;
-    }
-
-    fetch(
-      `${API_BASE}/api/students/${encodeURIComponent(
-        selectedClassId
-      )}?year=${year}&term=${term}`
-    )
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setStudents(data);
-        else setStudents([]);
-      })
-      .catch(err => console.error("Error fetching students:", err));
-  }, [selectedClassId]);
-
-  /* ============================================================
-     3. LOAD PAYMENT HISTORY WHEN STUDENT SELECTED
-  ============================================================ */
-  useEffect(() => {
-    if (!studentId) {
+    if (!studentName.trim()) {
       setPayments([]);
       return;
     }
 
-    fetch(`${API_BASE}/api/student-payments/${studentId}`)
+    fetch(`${API_BASE}/api/student-payments/by-name/${encodeURIComponent(studentName.trim())}`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) setPayments(data);
       })
       .catch(err => console.error("Error fetching payments:", err));
-  }, [studentId]);
+  }, [studentName]);
 
   /* ============================================================
-     4. SUBMIT PAYMENT
+     SUBMIT PAYMENT
   ============================================================ */
   const submitPayment = async () => {
-    if (!studentId || !form.amount || !form.payment_type) {
-      return alert("Please select a student, enter amount, and type.");
+    if (!studentName.trim() || !form.amount || !form.payment_type) {
+      return alert("Enter the student name, amount, and type.");
     }
 
     const body = {
-      studentId,
+      studentName: studentName.trim(),
       date: form.date || new Date().toISOString().slice(0, 10),
       paymentMethod: form.payment_method,
       paymentType: form.payment_type,
@@ -123,7 +83,7 @@ function StudentPaymentUI() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/api/student-payments`, {
+      const res = await fetch(`${API_BASE}/api/student-payments/by-name`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
@@ -131,17 +91,15 @@ function StudentPaymentUI() {
 
       const saved = await res.json();
 
-      if (Array.isArray(saved.payments)) {
-        setPayments(saved.payments);
-      }
+      if (Array.isArray(saved.payments)) setPayments(saved.payments);
 
-      // Reset form after submit
       setForm({
         date: "",
         payment_method: "",
         payment_type: "",
         amount: ""
       });
+
     } catch (err) {
       console.error("Error submitting payment:", err);
       alert("Failed to submit payment.");
@@ -151,39 +109,20 @@ function StudentPaymentUI() {
   /* ============================================================
      RENDER
   ============================================================ */
-
   return (
     <div style={{ display: "flex", gap: 20 }}>
-      {/* LEFT SIDE FORM */}
+      
+      {/* LEFT PANEL */}
       <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
         <h2>New Student Payment</h2>
 
-        <label>Class:</label>
-        <select
-          value={selectedClassId}
-          onChange={e => setSelectedClassId(e.target.value)}
-        >
-          <option value="">-- Select Class --</option>
-          {classes.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.className}
-            </option>
-          ))}
-        </select>
-
-        <br />
-
-        <label>Student:</label>
-        <select value={studentId} onChange={e => setStudentId(e.target.value)}>
-          <option value="">-- Select Student --</option>
-          {students.map(s => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-
-        <br />
+        <label>Student Name:</label>
+        <input
+          type="text"
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+          placeholder="Enter student name"
+        />
 
         <label>Date:</label>
         <input
@@ -192,15 +131,11 @@ function StudentPaymentUI() {
           onChange={e => setForm({ ...form, date: e.target.value })}
         />
 
-        <br />
-
         <label>Payment Method:</label>
         <input
           value={form.payment_method}
           onChange={e => setForm({ ...form, payment_method: e.target.value })}
         />
-
-        <br />
 
         <label>Type of Payment:</label>
         <select
@@ -217,8 +152,6 @@ function StudentPaymentUI() {
           <option>Other/Misc</option>
         </select>
 
-        <br />
-
         <label>Amount:</label>
         <input
           type="number"
@@ -226,14 +159,12 @@ function StudentPaymentUI() {
           onChange={e => setForm({ ...form, amount: e.target.value })}
         />
 
-        <br />
-
-        <button onClick={submitPayment} style={{ marginTop: 15 }}>
+        <button onClick={submitPayment} style={{ marginTop: 10 }}>
           Submit Payment
         </button>
       </div>
 
-      {/* RIGHT SIDE TABLE */}
+      {/* RIGHT PANEL */}
       <div style={{ width: "60%" }}>
         <h2>Payment History</h2>
 
@@ -246,7 +177,6 @@ function StudentPaymentUI() {
               <th>Amount</th>
             </tr>
           </thead>
-
           <tbody>
             {payments.length === 0 ? (
               <tr>
@@ -256,7 +186,7 @@ function StudentPaymentUI() {
               </tr>
             ) : (
               payments.map((p, idx) => (
-                <tr key={p.id || idx}>
+                <tr key={idx}>
                   <td>{p.date}</td>
                   <td>{p.paymentMethod}</td>
                   <td>{p.paymentType}</td>

@@ -64,6 +64,12 @@ app.get("/admin", (req, res) => {
   res.sendFile(path.join(adminPath, "index.html"));
 });
 
+// Catch-all for all /admin/* routes (React Router will handle routing)
+app.get("/admin/*", (req, res) => {
+  res.sendFile(path.join(adminPath, "index.html"));
+});
+
+
 /* ---------------------------------------------------
    LOGIN ROUTE
 ----------------------------------------------------*/

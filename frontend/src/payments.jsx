@@ -26,18 +26,16 @@ export const Payments = () => {
 };
 
 /* ============================================================
-   STUDENT PAYMENTS — SIMPLIFIED VERSION
-   - No class dropdown
-   - No student dropdown
-   - Manual student name input
+   STUDENT PAYMENTS — SIMPLE MANUAL ENTRY VERSION
 ============================================================ */
 function StudentPaymentUI() {
   const API_BASE = import.meta.env.VITE_API_BASE;
 
-  const [studentName, setStudentName] = useState("");
   const [payments, setPayments] = useState([]);
 
   const [form, setForm] = useState({
+    className: "",
+    studentName: "",
     date: "",
     payment_method: "",
     payment_type: "",
@@ -47,34 +45,18 @@ function StudentPaymentUI() {
   const year = "2025";
   const term = "2";
 
-  /* ============================================================
-     LOAD ALL PAYMENTS FOR THIS STUDENT
-  ============================================================ */
-  useEffect(() => {
-    if (!studentName.trim()) {
-      setPayments([]);
-      return;
-    }
-
-    fetch(`${API_BASE}/api/student-payments/by-name/${encodeURIComponent(studentName.trim())}`)
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setPayments(data);
-      })
-      .catch(err => console.error("Error fetching payments:", err));
-  }, [studentName]);
-
-  /* ============================================================
+  /* =============================
      SUBMIT PAYMENT
-  ============================================================ */
+  ============================== */
   const submitPayment = async () => {
-    if (!studentName.trim() || !form.amount || !form.payment_type) {
-      return alert("Enter the student name, amount, and type.");
+    if (!form.studentName || !form.className || !form.amount || !form.payment_type) {
+      return alert("Please fill class, student name, amount, and type.");
     }
 
     const body = {
-      studentName: studentName.trim(),
-      date: form.date || new Date().toISOString().slice(0, 10),
+      className: form.className.trim(),
+      studentName: form.studentName.trim(),
+      date: form.date || new Date().toISOString().split("T")[0],
       paymentMethod: form.payment_method,
       paymentType: form.payment_type,
       amount: Number(form.amount),
@@ -83,7 +65,7 @@ function StudentPaymentUI() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/api/student-payments/by-name`, {
+      const res = await fetch(`${API_BASE}/api/student-payments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
@@ -91,9 +73,14 @@ function StudentPaymentUI() {
 
       const saved = await res.json();
 
-      if (Array.isArray(saved.payments)) setPayments(saved.payments);
+      if (Array.isArray(saved.payments)) {
+        setPayments(saved.payments);
+      }
 
+      // reset
       setForm({
+        className: "",
+        studentName: "",
         date: "",
         payment_method: "",
         payment_type: "",
@@ -106,9 +93,6 @@ function StudentPaymentUI() {
     }
   };
 
-  /* ============================================================
-     RENDER
-  ============================================================ */
   return (
     <div style={{ display: "flex", gap: 20 }}>
       
@@ -116,15 +100,23 @@ function StudentPaymentUI() {
       <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
         <h2>New Student Payment</h2>
 
+        <label>Class:</label>
+        <input
+          type="text"
+          value={form.className}
+          onChange={(e) => setForm({ ...form, className: e.target.value })}
+          placeholder="Enter class name"
+        />
+
         <label>Student Name:</label>
         <input
           type="text"
-          value={studentName}
-          onChange={(e) => setStudentName(e.target.value)}
+          value={form.studentName}
+          onChange={(e) => setForm({ ...form, studentName: e.target.value })}
           placeholder="Enter student name"
         />
 
-        <label>Date:</label>
+        <label>Payment Date:</label>
         <input
           type="date"
           value={form.date}
@@ -135,9 +127,10 @@ function StudentPaymentUI() {
         <input
           value={form.payment_method}
           onChange={e => setForm({ ...form, payment_method: e.target.value })}
+          placeholder="Cash / UPI / Bank"
         />
 
-        <label>Type of Payment:</label>
+        <label>Payment Type:</label>
         <select
           value={form.payment_type}
           onChange={e => setForm({ ...form, payment_type: e.target.value })}
@@ -166,27 +159,32 @@ function StudentPaymentUI() {
 
       {/* RIGHT PANEL */}
       <div style={{ width: "60%" }}>
-        <h2>Payment History</h2>
+        <h2>Recent Payments</h2>
 
         <table border="1" cellPadding="8" width="100%">
           <thead>
             <tr>
+              <th>Class</th>
+              <th>Student</th>
               <th>Date</th>
               <th>Method</th>
               <th>Type</th>
               <th>Amount</th>
             </tr>
           </thead>
+
           <tbody>
             {payments.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ textAlign: "center" }}>
-                  No payments found
+                <td colSpan={6} style={{ textAlign: "center" }}>
+                  No payments yet
                 </td>
               </tr>
             ) : (
               payments.map((p, idx) => (
                 <tr key={idx}>
+                  <td>{p.className}</td>
+                  <td>{p.studentName}</td>
                   <td>{p.date}</td>
                   <td>{p.paymentMethod}</td>
                   <td>{p.paymentType}</td>
@@ -197,10 +195,10 @@ function StudentPaymentUI() {
           </tbody>
         </table>
       </div>
+
     </div>
   );
 }
-
 
 /* ============================================================
    MISC EXPENSES

@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Payments } from './payments.jsx';
 import { AdDashboard } from './dashboard2.jsx';
-import { StudentDeets } from './deets.jsx';
+
 
 
 export const ReportCards = () => {
@@ -166,7 +166,224 @@ export const ReportCards = () => {
 const API_BASE = import.meta.env.VITE_API_BASE; // keep your environment variable
 
 export function StudentDetails() {
-return <StudentDeets />
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [students, setStudents] = useState([]);
+  const [activeStudent, setActiveStudent] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    motherName: '',
+    fatherName: '',
+    contact: '',
+    address: '',
+    dob: '',
+    bloodType: ''
+  });
+
+  const currentYear = "2025";
+  const currentTerm = "2";
+
+  // Fetch all classes
+  useEffect(() => {
+    fetch(`${API_BASE}/api/classes`)
+      .then(res => res.json())
+      .then(data => setClasses(data))
+      .catch(err => console.error('Error fetching classes:', err));
+  }, []);
+
+  // Update students list when class changes
+  useEffect(() => {
+    if (!selectedClass) {
+      setStudents([]);
+      setActiveStudent(null);
+      setFormData({ name: '', motherName: '', fatherName: '', contact: '', address: '', dob: '', bloodType: '' });
+      return;
+    }
+
+    fetch(`${API_BASE}/api/students/${encodeURIComponent(selectedClass)}?year=${currentYear}&term=${currentTerm}`)
+      .then(res => res.json())
+      .then(data => {
+        const formatted = data.map(s => ({
+          id: s.id,
+          name: s.name,
+          motherName: s.mother_name || '',
+          fatherName: s.father_name || '',
+          contact: s.contact || '',
+          address: s.address || '',
+          dob: s.dob ? s.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
+          bloodType: s.blood_type || ''
+        }));
+        setStudents(formatted);
+        setActiveStudent(null);
+        setFormData({ name: '', motherName: '', fatherName: '', contact: '', address: '', dob: '', bloodType: '' });
+      })
+      .catch(err => console.error('Error fetching students:', err));
+  }, [selectedClass]);
+
+  const updateForm = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const selectStudent = (student) => {
+    setActiveStudent(student || null);
+    setFormData({
+      name: student?.name || '',
+      motherName: student?.motherName || '',
+      fatherName: student?.fatherName || '',
+      contact: student?.contact || '',
+      address: student?.address || '',
+      dob: student?.dob ? student.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
+      bloodType: student?.bloodType || ''
+    });
+  };
+
+  const clearForm = () => selectStudent(null);
+
+  const saveStudent = async () => {
+    if (!selectedClass || !formData.name || !formData.motherName || !formData.contact) {
+      return alert("Please fill in Name, Mother's Name, Contact, and select a Class.");
+    }
+
+    try {
+      const bodyData = {
+        ...formData,
+        className: selectedClass,
+        year: currentYear,
+        term: currentTerm
+      };
+
+      let res;
+      if (activeStudent?.id) {
+        res = await fetch(`${API_BASE}/api/students/${activeStudent.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyData)
+        });
+      } else {
+        res = await fetch(`${API_BASE}/api/students`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyData)
+        });
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(`HTTP ${res.status}: ${JSON.stringify(errorData)}`);
+      }
+
+      const savedStudent = await res.json();
+      alert(activeStudent ? "Student updated!" : "Student added!");
+
+      // Update students array immediately with DOB formatted for table/input
+      setStudents(prev => {
+        const existing = prev.find(s => s.id === savedStudent.id);
+        const formattedStudent = {
+          id: savedStudent.id,
+          name: savedStudent.name,
+          motherName: savedStudent.mother_name || existing?.motherName || '',
+          fatherName: savedStudent.father_name || existing?.fatherName || '',
+          contact: savedStudent.contact || existing?.contact || '',
+          address: savedStudent.address || existing?.address || '',
+          dob: savedStudent.dob
+        ? new Date(savedStudent.dob).toISOString().split('T')[0]  // YYYY-MM-DD
+        : existing?.dob ?? '', // ✅ YYYY-MM-DD
+          bloodType: savedStudent.blood_type ?? existing?.bloodType ?? ''
+        };
+
+        if (activeStudent?.id) {
+          return prev.map(s => s.id === activeStudent.id ? formattedStudent : s);
+        } else {
+          return [...prev, formattedStudent];
+        }
+      });
+
+      clearForm();
+    } catch (err) {
+      console.error("Save error:", err);
+      alert(`Failed to save student: ${err.message}`);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
+      {/* LEFT PANEL: FORM */}
+      <div style={{ width: '40%', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+        <h2>{activeStudent ? 'Edit Student' : 'Add New Student'}</h2>
+
+        <label>Name:</label>
+        <input name="name" value={formData.name} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Mother's Name:</label>
+        <input name="motherName" value={formData.motherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Father's Name:</label>
+        <input name="fatherName" value={formData.fatherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Contact:</label>
+        <input name="contact" value={formData.contact} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Address:</label>
+        <input name="address" value={formData.address} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Date of Birth:</label>
+        <input type="date" name="dob" value={formData.dob} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Blood Type:</label>
+        <input name="bloodType" value={formData.bloodType} onChange={updateForm} placeholder="A+, O-, B+, etc." style={{ width: '100%', marginBottom: '10px' }} />
+
+        <div style={{ marginTop: '15px' }}>
+          <button onClick={saveStudent} style={{ padding: '10px 15px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
+            {activeStudent ? 'Save Changes' : 'Add Student'}
+          </button>
+          <button onClick={clearForm} style={{ marginLeft: '10px', padding: '10px 15px', cursor: 'pointer' }}>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      {/* RIGHT PANEL: STUDENT LIST */}
+      <div style={{ width: '60%' }}>
+        <h2>Student List</h2>
+
+        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ marginBottom: '15px' }}>
+          <option value="">-- Select Class --</option>
+          {classes.map(c => (
+            <option key={`${c.className}-${c.year}-${c.term}`} value={c.className}>{c.className}</option>
+          ))}
+        </select>
+
+        <table border="1" cellPadding="8" width="100%">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Mother's Name</th>
+              <th>Father's Name</th>
+              <th>Contact</th>
+              <th>Address</th>
+              <th>DOB</th>
+              <th>Blood Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.length === 0 ? (
+              <tr><td colSpan="7" style={{ textAlign: 'center' }}>No students found</td></tr>
+            ) : (
+              students.map((s) => (
+                <tr key={s.id} onClick={() => selectStudent(s)} style={{ cursor: 'pointer' }}>
+                  <td>{s.name}</td>
+                  <td>{s.motherName}</td>
+                  <td>{s.fatherName}</td>
+                  <td>{s.contact}</td>
+                  <td>{s.address}</td>
+                  <td>{s.dob}</td>
+                  <td>{s.bloodType}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 

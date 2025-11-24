@@ -248,12 +248,12 @@ function MiscPaymentUI() {
       <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
         <h2>New Expense Entry</h2>
 
-        <label>Date:</label>
+        <label>Date:</label> 
         <input
           type="date"
           value={form.date}
           onChange={e => setForm({ ...form, date: e.target.value })}
-        />
+        /><br />
 
         <label>Category:</label>
         <select
@@ -269,20 +269,20 @@ function MiscPaymentUI() {
           <option>Bus Fuel</option>
           <option>Bus Maintenance</option>
           <option>Other/Misc</option>
-        </select>
+        </select> <br />
 
         <label>Description:</label>
         <input
           value={form.description}
           onChange={e => setForm({ ...form, description: e.target.value })}
-        />
+        /><br />
 
         <label>Amount:</label>
         <input
           type="number"
           value={form.amount}
           onChange={e => setForm({ ...form, amount: e.target.value })}
-        />
+        /> <br /> 
 
         <button onClick={submit} style={{ marginTop: 10 }}>
           Add Expense

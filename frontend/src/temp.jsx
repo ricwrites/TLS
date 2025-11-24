@@ -4,8 +4,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Payments } from './payments.jsx';
 import { AdDashboard } from './dashboard2.jsx';
-
-
+import { StudentDeets } from './deets.jsx';
 
 
 export const ReportCards = () => {
@@ -162,195 +161,12 @@ export const ReportCards = () => {
 };
 
 
-export function StudentDetails({ selectedClass, year, term }) {
-  const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [studentData, setStudentData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const API_BASE = import.meta.env.VITE_API_BASE;
 
 
-  // Fetch students whenever class/year/term changes
-  const fetchStudents = async () => {
-    if (!selectedClass || !year || !term) return;
+const API_BASE = import.meta.env.VITE_API_BASE; // keep your environment variable
 
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/students?class=${encodeURIComponent(
-          selectedClass
-        )}&year=${year}&term=${term}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch students");
-      const data = await res.json();
-      setStudents(data);
-
-      // If previously selected student exists, refresh their data
-      if (selectedStudentId) {
-        const stillExists = data.find((s) => s.id === Number(selectedStudentId));
-        if (stillExists) setStudentData(stillExists);
-        else setSelectedStudentId(null);
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
-  }, [selectedClass, year, term]);
-
-  // Load selected student's details into form
-  useEffect(() => {
-    const student = students.find((s) => s.id === Number(selectedStudentId));
-    if (student) setStudentData(student);
-    else setStudentData({});
-  }, [selectedStudentId, students]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setStudentData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = async () => {
-    if (!selectedStudentId) return;
-    try {
-      const res = await fetch(`${API_BASE}/api/students/${selectedStudentId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: studentData.name,
-          roll: studentData.roll,
-          contact: studentData.contact,
-          address: studentData.address,
-          motherName: studentData.mother_name,
-          fatherName: studentData.father_name,
-          dob: studentData.dob,
-          bloodType: studentData.blood_type,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to update student");
-
-      // After saving, refresh the students list so dropdown updates
-      await fetchStudents();
-
-      alert("Student updated successfully!");
-    } catch (err) {
-      alert("Error updating student: " + err.message);
-    }
-  };
-
-  if (loading) return <p>Loading students...</p>;
-  if (error) return <p>Error: {error}</p>;
-
-  return (
-    <div>
-      <h2>Students for {selectedClass} ({year}, {term})</h2>
-
-      <select
-        value={selectedStudentId || ""}
-        onChange={(e) => setSelectedStudentId(e.target.value)}
-      >
-        <option value="">Select a student</option>
-        {students.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.roll ? `${s.roll} - ` : ""}{s.name}
-          </option>
-        ))}
-      </select>
-
-      {selectedStudentId && (
-        <div style={{ marginTop: "20px" }}>
-          <label>
-            Name:
-            <input
-              type="text"
-              name="name"
-              value={studentData.name || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            Roll:
-            <input
-              type="number"
-              name="roll"
-              value={studentData.roll || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            Contact:
-            <input
-              type="text"
-              name="contact"
-              value={studentData.contact || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            Address:
-            <input
-              type="text"
-              name="address"
-              value={studentData.address || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            Mother Name:
-            <input
-              type="text"
-              name="mother_name"
-              value={studentData.mother_name || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            Father Name:
-            <input
-              type="text"
-              name="father_name"
-              value={studentData.father_name || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            DOB:
-            <input
-              type="date"
-              name="dob"
-              value={studentData.dob || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <label>
-            Blood Type:
-            <input
-              type="text"
-              name="blood_type"
-              value={studentData.blood_type || ""}
-              onChange={handleChange}
-            />
-          </label>
-          <br />
-          <button onClick={handleSave}>Save</button>
-        </div>
-      )}
-    </div>
-  );
+export function StudentDetails() {
+return <StudentDeets />
 }
 
 

@@ -134,7 +134,7 @@ async function initDB() {
   `);
 
 await pool.query(`
-CREATE TABLE student_payments_manual (
+CREATE TABLE IF NOT EXISTS student_payments_manual (
     id SERIAL PRIMARY KEY,
     class_name VARCHAR(100) NOT NULL,
     student_name VARCHAR(100) NOT NULL,
@@ -281,6 +281,20 @@ app.get("/api/students", async (req, res) => {
   }
 });
 
+app.get("/api/students/all", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, class_name, year, term 
+       FROM students 
+       ORDER BY name ASC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Fetch all students error:", err);
+    res.status(500).json({ error: "Database fetch failed" });
+  }
+});
+
 
 app.post("/api/students", async (req, res) => {
   const body = req.body;
@@ -374,47 +388,76 @@ app.get("/api/student-payments/:studentId", async (req, res) => {
   const { studentId } = req.params;
 
   try {
-    const result = await pool.query(
-      `SELECT sp.*, s.name AS student_name, s.class_name
-       FROM student_payments sp
-       JOIN students s ON sp.student_id = s.id
-       WHERE sp.student_id = $1
-       ORDER BY sp.date DESC`,
+    // Get student info (needed for manual table lookup)
+    const s = await pool.query(
+      `SELECT name, class_name FROM students WHERE id=$1`,
       [studentId]
+    );
+
+    if (s.rows.length === 0) return res.json([]);
+
+    const { name: studentName, class_name: className } = s.rows[0];
+
+    // Merge both tables
+    const result = await pool.query(
+      `
+      SELECT 
+        id,
+        date,
+        payment_method AS "paymentMethod",
+        payment_type AS "paymentType",
+        amount,
+        year,
+        term,
+        'main' AS source
+      FROM student_payments
+      WHERE student_id=$1
+
+      UNION ALL
+
+      SELECT
+        id,
+        date,
+        payment_method AS "paymentMethod",
+        payment_type AS "paymentType",
+        amount,
+        year,
+        term,
+        'manual' AS source
+      FROM student_payments_manual
+      WHERE student_name=$2 AND class_name=$3
+
+      ORDER BY date DESC
+      `,
+      [studentId, studentName, className]
     );
 
     const payments = result.rows.map(p => ({
       id: p.id,
-      studentId: p.student_id,
-      studentName: p.student_name,
-      className: p.class_name,
-      date: p.date ? p.date.toISOString().split("T")[0] : null,
-      paymentMethod: p.payment_method,
-      paymentType: p.payment_type,
+      date: p.date ? p.date.toISOString().split("T")[0] : "",
+      paymentMethod: p.paymentMethod,
+      paymentType: p.paymentType,
       amount: Number(p.amount),
       year: p.year,
-      term: p.term
+      term: p.term,
+      source: p.source
     }));
 
     res.json(payments);
+
   } catch (err) {
-    console.error("Fetch student payments error:", err);
-    res.status(500).json({ error: "Database fetch failed", message: err.message });
+    console.error("Payment fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch payments." });
   }
 });
 
 
-
-
-
-
-
-// Express.js example
 app.post("/api/student-payments/from-manual", async (req, res) => {
   try {
     const {
-      className,
+      studentId,
       studentName,
+      className,
       date,
       paymentMethod,
       paymentType,
@@ -423,34 +466,48 @@ app.post("/api/student-payments/from-manual", async (req, res) => {
       term
     } = req.body;
 
-    // Insert into manual payments table
+    // Save manual payment
     await pool.query(
       `INSERT INTO student_payments_manual 
-       (class_name, student_name, date, payment_method, payment_type, amount, year, term)
+        (class_name, student_name, date, payment_method, payment_type, amount, year, term)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
       [className, studentName, date, paymentMethod, paymentType, amount, year, term]
     );
 
-    // Return recent payments for this class/year/term
-    const payments = await pool.query(
-      `SELECT 
-         class_name AS "className", 
-         student_name AS "studentName", 
-         date, 
-         payment_method AS "paymentMethod", 
-         payment_type AS "paymentType", 
-         amount
-       FROM student_payments_manual
-       WHERE class_name=$1 AND year=$2 AND term=$3
-       ORDER BY date DESC`,
-      [className, year, term]
+    // Now return full merged list (same as GET)
+    const merged = await pool.query(
+      `
+      SELECT date, payment_method AS "paymentMethod",
+             payment_type AS "paymentType", amount, year, term
+      FROM student_payments
+      WHERE student_id=$1
+      
+      UNION ALL
+      
+      SELECT date, payment_method AS "paymentMethod",
+             payment_type AS "paymentType", amount, year, term
+      FROM student_payments_manual
+      WHERE student_name=$2 AND class_name=$3
+      
+      ORDER BY date DESC
+      `,
+      [studentId, studentName, className]
     );
 
-    res.json({ payments: payments.rows });
+    const payments = merged.rows.map(p => ({
+      date: p.date?.toISOString().split("T")[0],
+      paymentMethod: p.paymentMethod,
+      paymentType: p.paymentType,
+      amount: Number(p.amount),
+      year: p.year,
+      term: p.term
+    }));
+
+    res.json({ payments });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to save payment." });
+    console.error("Manual payment error:", err);
+    res.status(500).json({ error: "Failed to submit payment." });
   }
 });
 

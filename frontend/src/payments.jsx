@@ -32,68 +32,64 @@ export const Payments = () => {
 function StudentPaymentUI() {
   const API_BASE = import.meta.env.VITE_API_BASE;
 
-  const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [payments, setPayments] = useState([]);
 
   const [form, setForm] = useState({
-    className: "",
-    year: "2025",
-    term: "2",
+    studentId: "",
     studentName: "",
+    className: "",
+    year: "",
+    term: "",
     date: "",
-    payment_method: "",
-    payment_type: "",
+    paymentMethod: "",
+    paymentType: "",
     amount: ""
   });
 
   /* =============================
-     FETCH ALL CLASSES
+     FETCH ALL STUDENTS ON MOUNT
   ============================== */
   useEffect(() => {
-    fetch(`${API_BASE}/api/classes-from-students`)
+    fetch(`${API_BASE}/api/students/all`)
       .then(res => res.json())
-      .then(data => setClasses(data))
-      .catch(err => console.error("Error fetching classes:", err));
+      .then(data => setStudents(data))
+      .catch(err => console.error("Error fetching students:", err));
   }, []);
 
   /* =============================
-     FETCH STUDENTS WHEN CLASS CHANGES
+     WHEN STUDENT SELECTED → LOAD PAYMENTS
   ============================== */
   useEffect(() => {
-    if (!form.className) {
-      setStudents([]);
-      setForm({ ...form, studentName: "" });
-      return;
-    }
+    if (!form.studentId) return;
 
-    fetch(`${API_BASE}/api/students?class=${encodeURIComponent(form.className)}&year=${encodeURIComponent(form.year)}&term=${encodeURIComponent(form.term)}`)
+    fetch(`${API_BASE}/api/student-payments/${form.studentId}`)
       .then(res => res.json())
-      .then(data => setStudents(data))
+      .then(data => setPayments(data || []))
       .catch(err => {
-        console.error("Error fetching students:", err);
-        setStudents([]);
+        console.error("Error fetching payments:", err);
+        setPayments([]);
       });
-
-  }, [form.className, form.year, form.term]);
+  }, [form.studentId]);
 
   /* =============================
      SUBMIT PAYMENT
   ============================== */
   const submitPayment = async () => {
-    if (!form.className || !form.studentName || !form.amount || !form.payment_type) {
-      return alert("Please fill class, student name, amount, and type.");
+    if (!form.studentId || !form.amount || !form.paymentType) {
+      return alert("Please fill student, amount, and type.");
     }
 
     const body = {
-      className: form.className,
+      studentId: form.studentId,
       studentName: form.studentName,
-      date: form.date || new Date().toISOString().split("T")[0],
-      paymentMethod: form.payment_method,
-      paymentType: form.payment_type,
-      amount: Number(form.amount),
+      className: form.className,
       year: form.year,
-      term: form.term
+      term: form.term,
+      date: form.date || new Date().toISOString().split("T")[0],
+      paymentMethod: form.paymentMethod,
+      paymentType: form.paymentType,
+      amount: Number(form.amount)
     };
 
     try {
@@ -107,13 +103,12 @@ function StudentPaymentUI() {
 
       setPayments(data.payments || []);
 
-      // reset student & payment fields (keep class/year/term selected)
+      // Reset fields but keep selected student
       setForm({
         ...form,
-        studentName: "",
         date: "",
-        payment_method: "",
-        payment_type: "",
+        paymentMethod: "",
+        paymentType: "",
         amount: ""
       });
 
@@ -123,6 +118,23 @@ function StudentPaymentUI() {
     }
   };
 
+  /* =============================
+     HANDLE STUDENT SELECT
+  ============================== */
+  const handleStudentChange = (e) => {
+    const studentId = e.target.value;
+    const selected = students.find(s => s.id == studentId);
+
+    setForm({
+      ...form,
+      studentId,
+      studentName: selected.name,
+      className: selected.class_name,
+      year: selected.year,
+      term: selected.term
+    });
+  };
+
   return (
     <div style={{ display: "flex", gap: 20 }}>
       
@@ -130,32 +142,17 @@ function StudentPaymentUI() {
       <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
         <h2>New Student Payment</h2>
 
-        <label>Class:</label>
-        <select
-          value={form.className}
-          onChange={e => setForm({ ...form, className: e.target.value })}
-        > <br />
-          <option value="">-- Select Class --</option>
-          {classes.map((c, i) => (
-            <option key={i} value={c.class_name}>
-              {c.class_name} ({c.year} - Term {c.term})
+        <label>Student:</label>
+        <select value={form.studentId} onChange={handleStudentChange}>
+          <option value="">-- Select Student --</option>
+          {students.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.class_name} - {s.year} T{s.term})
             </option>
           ))}
         </select><br />
 
-        <label>Student Name:</label>
-        <select
-          value={form.studentName}
-          onChange={e => setForm({ ...form, studentName: e.target.value })}
-          disabled={!students.length}
-        >
-          <option value="">-- Select Student --</option>
-          {students.map((s, i) => (
-            <option key={i} value={s.name}>{s.name}</option>
-          ))}
-        </select><br />
-
-        <label>Payment Date:</label>
+        <label>Date:</label>
         <input
           type="date"
           value={form.date}
@@ -164,15 +161,15 @@ function StudentPaymentUI() {
 
         <label>Payment Method:</label>
         <input
-          value={form.payment_method}
-          onChange={e => setForm({ ...form, payment_method: e.target.value })}
+          value={form.paymentMethod}
+          onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
           placeholder="Cash / UPI / Bank"
         /><br />
 
         <label>Payment Type:</label>
         <select
-          value={form.payment_type}
-          onChange={e => setForm({ ...form, payment_type: e.target.value })}
+          value={form.paymentType}
+          onChange={e => setForm({ ...form, paymentType: e.target.value })}
         >
           <option value="">-- Select --</option>
           <option>School Fees</option>
@@ -198,13 +195,11 @@ function StudentPaymentUI() {
 
       {/* RIGHT PANEL */}
       <div style={{ width: "60%" }}>
-        <h2>Recent Payments</h2>
+        <h2>Payments for {form.studentName || "—"}</h2>
 
         <table border="1" cellPadding="8" width="100%">
           <thead>
             <tr>
-              <th>Class</th>
-              <th>Student</th>
               <th>Date</th>
               <th>Method</th>
               <th>Type</th>
@@ -214,15 +209,13 @@ function StudentPaymentUI() {
           <tbody>
             {payments.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: "center" }}>
+                <td colSpan={4} style={{ textAlign: "center" }}>
                   No payments yet
                 </td>
               </tr>
             ) : (
               payments.map((p, idx) => (
                 <tr key={idx}>
-                  <td>{p.className}</td>
-                  <td>{p.studentName}</td>
                   <td>{p.date}</td>
                   <td>{p.paymentMethod}</td>
                   <td>{p.paymentType}</td>
@@ -236,6 +229,7 @@ function StudentPaymentUI() {
     </div>
   );
 }
+
 
 
 /* ============================================================

@@ -124,33 +124,38 @@ export const AdDashboard = ({ currentUser }) => {
       let allPayments = [];
 
       for (const cls of classes) {
-        const studentRes = await fetch(`${API_BASE}/api/students/${encodeURIComponent(cls.className)}?year=${cls.year}&term=${cls.term}`);
-        const students = await studentRes.json();
-        if (!Array.isArray(students)) continue;
+  const studentRes = await fetch(
+    `${API_BASE}/api/students?class=${encodeURIComponent(cls.className)}&year=${cls.year}&term=${cls.term}`
+  );
 
-        for (const s of students) {
-          try {
-            const paymentRes = await fetch(`${API_BASE}/api/student-payments/${s.id}`);
-            const payments = await paymentRes.json();
-            if (!Array.isArray(payments) || !payments.length) continue;
+  const students = await studentRes.json();
+  if (!Array.isArray(students)) continue;
 
-            allPayments.push(
-              ...payments.map((p) => ({
-                Student: s.name,
-                Date: p.date,
-                Type: p.paymentType,
-                Method: p.paymentMethod,
-                Amount: Number(p.amount),
-                Class: cls.className,
-                Year: p.year,
-                Term: p.term,
-              }))
-            );
-          } catch (err) {
-            console.error(`Failed to fetch payments for student ${s.id}`, err);
-          }
-        }
-      }
+  for (const s of students) {
+    try {
+      const paymentRes = await fetch(`${API_BASE}/api/student-payments/${s.id}`);
+      const payments = await paymentRes.json();
+      if (!Array.isArray(payments) || !payments.length) continue;
+
+      allPayments.push(
+        ...payments.map((p) => ({
+          Student: s.name,
+          Date: p.date,
+          Type: p.paymentType,
+          Method: p.paymentMethod,
+          Amount: Number(p.amount),
+          Class: p.className || cls.className,
+          Year: p.year,
+          Term: p.term,
+        }))
+      );
+
+    } catch (err) {
+      console.error(`Failed to fetch payments for student ${s.id}`, err);
+    }
+  }
+}
+
 
       if (!allPayments.length) return alert("No student payments found!");
       exportCSV(`student_payments_${Date.now()}.csv`, allPayments, [

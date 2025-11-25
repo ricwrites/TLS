@@ -360,34 +360,25 @@ app.get("/api/student-payments/:studentId", async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT sp.*, s.name AS student_name, s.class_name
-       FROM student_payments sp
-       JOIN students s ON sp.student_id = s.id
-       WHERE sp.student_id = $1
-       ORDER BY sp.date DESC`,
+      `SELECT * FROM student_payments WHERE student_id=$1 ORDER BY date DESC`,
       [studentId]
     );
 
-    const payments = result.rows.map(p => ({
+    res.json(result.rows.map(p => ({
       id: p.id,
       studentId: p.student_id,
-      studentName: p.student_name,
-      className: p.class_name,
       date: p.date ? p.date.toISOString().split("T")[0] : null,
       paymentMethod: p.payment_method,
       paymentType: p.payment_type,
       amount: Number(p.amount),
       year: p.year,
       term: p.term
-    }));
-
-    res.json(payments);
+    })));
   } catch (err) {
     console.error("Fetch student payments error:", err);
     res.status(500).json({ error: "Database fetch failed", message: err.message });
   }
 });
-
 
 // POST /api/student-payments
 app.post("/api/student-payments", async (req, res) => {
@@ -501,7 +492,6 @@ app.post("/api/student-payments/from-manual", async (req, res) => {
       id: p.id,
       studentId: p.student_id,
       studentName,
-      className,
       date: p.date ? p.date.toISOString().split("T")[0] : null,
       paymentMethod: p.payment_method,
       paymentType: p.payment_type,
@@ -510,7 +500,7 @@ app.post("/api/student-payments/from-manual", async (req, res) => {
       term: p.term
     }));
 
-    res.json({ studentId, studentName, className, payments });
+    res.json({ studentId, studentName, payments });
 
   } catch (err) {
     console.error("Manual payment error:", err);

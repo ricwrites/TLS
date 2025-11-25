@@ -656,6 +656,22 @@ app.delete("/api/student-payments/:id", async (req, res) => {
 });
 
 
+// Returns distinct class/year/term from students table
+app.get("/api/classes-from-students", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT class_name, year, term
+       FROM students
+       ORDER BY class_name, year, term`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching classes-from-students:", err);
+    res.status(500).json({ error: "Failed to fetch classes" });
+  }
+});
+
+
 
 
 /* ---------------------------------------------------

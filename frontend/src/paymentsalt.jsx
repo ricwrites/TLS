@@ -28,18 +28,13 @@ export const Payments = () => {
 /* ============================================================
    STUDENT PAYMENTS — SIMPLE MANUAL ENTRY VERSION
 ============================================================ */
-
 function StudentPaymentUI() {
   const API_BASE = import.meta.env.VITE_API_BASE;
 
-  const [classes, setClasses] = useState([]);
-  const [students, setStudents] = useState([]);
   const [payments, setPayments] = useState([]);
 
   const [form, setForm] = useState({
     className: "",
-    year: "2025",
-    term: "2",
     studentName: "",
     date: "",
     payment_method: "",
@@ -47,81 +42,55 @@ function StudentPaymentUI() {
     amount: ""
   });
 
-  /* =============================
-     FETCH ALL CLASSES
-  ============================== */
-  useEffect(() => {
-    fetch(`${API_BASE}/api/classes-from-students`)
-      .then(res => res.json())
-      .then(data => setClasses(data))
-      .catch(err => console.error("Error fetching classes:", err));
-  }, []);
-
-  /* =============================
-     FETCH STUDENTS WHEN CLASS CHANGES
-  ============================== */
-  useEffect(() => {
-    if (!form.className) {
-      setStudents([]);
-      setForm({ ...form, studentName: "" });
-      return;
-    }
-
-    fetch(`${API_BASE}/api/students?class=${encodeURIComponent(form.className)}&year=${encodeURIComponent(form.year)}&term=${encodeURIComponent(form.term)}`)
-      .then(res => res.json())
-      .then(data => setStudents(data))
-      .catch(err => {
-        console.error("Error fetching students:", err);
-        setStudents([]);
-      });
-
-  }, [form.className, form.year, form.term]);
+  const year = "2025";
+  const term = "2";
 
   /* =============================
      SUBMIT PAYMENT
   ============================== */
   const submitPayment = async () => {
-    if (!form.className || !form.studentName || !form.amount || !form.payment_type) {
-      return alert("Please fill class, student name, amount, and type.");
-    }
+  if (!form.studentName || !form.className || !form.amount || !form.payment_type) {
+    return alert("Please fill class, student name, amount, and type.");
+  }
 
-    const body = {
-      className: form.className,
-      studentName: form.studentName,
-      date: form.date || new Date().toISOString().split("T")[0],
-      paymentMethod: form.payment_method,
-      paymentType: form.payment_type,
-      amount: Number(form.amount),
-      year: form.year,
-      term: form.term
-    };
-
-    try {
-      const res = await fetch(`${API_BASE}/api/student-payments/from-manual`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      const data = await res.json();
-
-      setPayments(data.payments || []);
-
-      // reset student & payment fields (keep class/year/term selected)
-      setForm({
-        ...form,
-        studentName: "",
-        date: "",
-        payment_method: "",
-        payment_type: "",
-        amount: ""
-      });
-
-    } catch (err) {
-      console.error("Error submitting payment:", err);
-      alert("Failed to submit payment.");
-    }
+  const body = {
+    className: form.className.trim(),
+    studentName: form.studentName.trim(),
+    date: form.date || new Date().toISOString().split("T")[0],
+    paymentMethod: form.payment_method,
+    paymentType: form.payment_type,
+    amount: Number(form.amount),
+    year,
+    term
   };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/student-payments/from-manual`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    setPayments(data.payments || []);
+
+    // reset form
+    setForm({
+      className: "",
+      studentName: "",
+      date: "",
+      payment_method: "",
+      payment_type: "",
+      amount: ""
+    });
+
+  } catch (err) {
+    console.error("Error submitting payment:", err);
+    alert("Failed to submit payment.");
+  }
+};
+
 
   return (
     <div style={{ display: "flex", gap: 20 }}>
@@ -131,29 +100,20 @@ function StudentPaymentUI() {
         <h2>New Student Payment</h2>
 
         <label>Class:</label>
-        <select
+        <input
+          type="text"
           value={form.className}
-          onChange={e => setForm({ ...form, className: e.target.value })}
-        > <br />
-          <option value="">-- Select Class --</option>
-          {classes.map((c, i) => (
-            <option key={i} value={c.class_name}>
-              {c.class_name} ({c.year} - Term {c.term})
-            </option>
-          ))}
-        </select><br />
+          onChange={(e) => setForm({ ...form, className: e.target.value })}
+          placeholder="Enter class name"
+        />
 
         <label>Student Name:</label>
-        <select
+        <input
+          type="text"
           value={form.studentName}
-          onChange={e => setForm({ ...form, studentName: e.target.value })}
-          disabled={!students.length}
-        >
-          <option value="">-- Select Student --</option>
-          {students.map((s, i) => (
-            <option key={i} value={s.name}>{s.name}</option>
-          ))}
-        </select><br />
+          onChange={(e) => setForm({ ...form, studentName: e.target.value })}
+          placeholder="Enter student name"
+        /><br />
 
         <label>Payment Date:</label>
         <input
@@ -173,7 +133,7 @@ function StudentPaymentUI() {
         <select
           value={form.payment_type}
           onChange={e => setForm({ ...form, payment_type: e.target.value })}
-        >
+        ><br />
           <option value="">-- Select --</option>
           <option>School Fees</option>
           <option>Registration</option>
@@ -211,6 +171,7 @@ function StudentPaymentUI() {
               <th>Amount</th>
             </tr>
           </thead>
+
           <tbody>
             {payments.length === 0 ? (
               <tr>
@@ -233,10 +194,10 @@ function StudentPaymentUI() {
           </tbody>
         </table>
       </div>
+
     </div>
   );
 }
-
 
 /* ============================================================
    MISC EXPENSES

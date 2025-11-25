@@ -2,7 +2,7 @@ import './admin.css';
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { Payments } from './payments.jsx';
+import { Payments } from './paymentsalt.jsx';
 import { AdDashboard } from './dashboard2.jsx';
 
 

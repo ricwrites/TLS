@@ -315,7 +315,7 @@ function MiscPaymentUI() {
 /* ============================================================
    SALARY PAYMENTS
 ============================================================ */
-const SalaryPaymentUI() {
+const SalaryPaymentUI = () => {
   const staffList = ["Almorah S. Marak", "Anmol Lohar", "Aparna Baidhya", "Balsime N. Sangma", "Barbie", "Bhogte Thapa", "Bhrainsthone  R. Marak", "Bornali Saha", "Cheasa G. Momin", "Chekamangku A. Sangma", "Dilsa A. Sangma", "Jyoti Prabha Hajong", "Kamal Nath Sahoo", "Kanka Saha", "Mayukha", "Moumita Biswas", "Naina Harlalka", "Nisha Rai", "Padma Koch", "Pomme Das", "Poonam Rai", "Richard Awuku", "Richard Roy", "Rima Chowdhury Saha", "Ritah N. Sangma", "Sandera N. Sangma", "Selthindro M. Marak ", "Sengchila M.  Sangma", "Shivani Singh", "Silingchi M. Sangma", "Sonal Gupta", "Sonika ", "Stephanie K. Sangma", "Suman Mazumdar", "Tenghchi M. Marak", "Teacher A"];
   const [selected, setSelected] = useState("");
   const [payments, setPayments] = useState([]);

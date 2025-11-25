@@ -368,7 +368,7 @@ function MiscPaymentUI() {
 /* ============================================================
    SALARY PAYMENTS
 ============================================================ */
-function SalaryPaymentUI() {
+   const SalaryPaymentUI = () => {
   const staffList = ["Almorah S. Marak", "Anmol Lohar", "Aparna Baidhya", "Balsime N. Sangma", "Barbie", "Bhogte Thapa", "Bhrainsthone  R. Marak", "Bornali Saha", "Cheasa G. Momin", "Chekamangku A. Sangma", "Dilsa A. Sangma", "Jyoti Prabha Hajong", "Kamal Nath Sahoo", "Kanka Saha", "Mayukha", "Moumita Biswas", "Naina Harlalka", "Nisha Rai", "Padma Koch", "Pomme Das", "Poonam Rai", "Richard Awuku", "Richard Roy", "Rima Chowdhury Saha", "Ritah N. Sangma", "Sandera N. Sangma", "Selthindro M. Marak ", "Sengchila M.  Sangma", "Shivani Singh", "Silingchi M. Sangma", "Sonal Gupta", "Sonika ", "Stephanie K. Sangma", "Suman Mazumdar", "Tenghchi M. Marak", "Teacher A"];
   const [selected, setSelected] = useState("");
   const [payments, setPayments] = useState([]);
@@ -407,73 +407,13 @@ function SalaryPaymentUI() {
   return (
     <div style={{ display: "flex", gap: 20 }}>
       <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
-        <h2>New Salary Payment</h2>
-
-        <label>Staff:</label>
-        <select value={selected} onChange={e => setSelected(e.target.value)}>
-          <option value="">-- Select Staff --</option>
-          {staffList.map((s, i) => (
-            <option key={i}>{s}</option>
-          ))}
-        </select><br />
-
-        <label>Date:</label>
-        <input
-          type="date"
-          value={form.date}
-          onChange={e => setForm({ ...form, date: e.target.value })}
-        /><br />
-
-        <label>Month:</label>
-        <input
-          value={form.month}
-          onChange={e => setForm({ ...form, month: e.target.value })}
-        /><br />
-
-        <label>Amount:</label>
-        <input
-          type="number"
-          value={form.amount}
-          onChange={e => setForm({ ...form, amount: e.target.value })}
-        /><br />
-
-        <label>Mode:</label>
-        <select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value })}>
-          <option value="">-- Select --</option>
-          <option>Cash</option>
-          <option>UPI</option>
-          <option>Bank Transfer</option>
-        </select><br />
-
-        <button onClick={submit} style={{ marginTop: 10 }}>
-          Submit Salary
-        </button>
+        {/* ... your form ... */}
       </div>
-
-   <div style={{ width: "60%" }}>
-        <h2>Salary Payment History</h2>
-        <table border="1" cellPadding="8" width="100%">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Month</th>
-              <th>Amount</th>
-              <th>Mode</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.map((p, idx) => (
-              <tr key={p.id || idx}>
-                <td>{p.date}</td>
-                <td>{p.month}</td>
-                <td>{p.amount}</td>
-                <td>{p.mode}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div style={{ width: "60%" }}>
+        {/* ... table rendering ... */}
       </div>
     </div>
   );
 };
 }
+

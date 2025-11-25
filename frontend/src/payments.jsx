@@ -119,116 +119,136 @@ function StudentPaymentUI() {
   };
 
   /* =============================
-     HANDLE STUDENT SELECT
-  ============================== */
-  const handleStudentChange = (e) => {
-    const studentId = e.target.value;
-    const selected = students.find(s => s.id == studentId);
+   HANDLE STUDENT INPUT
+============================= */
+const handleStudentNameChange = (e) => {
+  setForm({ ...form, studentName: e.target.value });
+};
 
-    setForm({
-      ...form,
-      studentId,
-      studentName: selected.name,
-      className: selected.class_name,
-      year: selected.year,
-      term: selected.term
-    });
-  };
+const handleClassNameChange = (e) => {
+  setForm({ ...form, className: e.target.value });
+};
 
-  return (
-    <div style={{ display: "flex", gap: 20 }}>
-      
-      {/* LEFT PANEL */}
-      <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
-        <h2>New Student Payment</h2>
+return (
+  <div style={{ display: "flex", gap: 20 }}>
+    
+    {/* LEFT PANEL */}
+    <div style={{ width: "40%", border: "1px solid #ccc", padding: 20 }}>
+      <h2>New Student Payment</h2>
 
-        <label>Student:</label>
-        <select value={form.studentId} onChange={handleStudentChange}>
-          <option value="">-- Select Student --</option>
-          {students.map(s => (
-            <option key={s.id} value={s.id}>
-              {s.name} ({s.class_name} - {s.year} T{s.term})
-            </option>
-          ))}
-        </select><br />
+      <label>Student Name:</label>
+      <input
+        type="text"
+        value={form.studentName}
+        onChange={handleStudentNameChange}
+        placeholder="Enter student name"
+      /><br />
 
-        <label>Date:</label>
-        <input
-          type="date"
-          value={form.date}
-          onChange={e => setForm({ ...form, date: e.target.value })}
-        /><br />
+      <label>Class:</label>
+      <input
+        type="text"
+        value={form.className}
+        onChange={handleClassNameChange}
+        placeholder="Enter class"
+      /><br />
 
-        <label>Payment Method:</label>
-        <input
-          value={form.paymentMethod}
-          onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
-          placeholder="Cash / UPI / Bank"
-        /><br />
+      <label>Year:</label>
+      <input
+        type="number"
+        value={form.year}
+        onChange={e => setForm({ ...form, year: e.target.value })}
+        placeholder="Enter year"
+      /><br />
 
-        <label>Payment Type:</label>
-        <select
-          value={form.paymentType}
-          onChange={e => setForm({ ...form, paymentType: e.target.value })}
-        >
-          <option value="">-- Select --</option>
-          <option>School Fees</option>
-          <option>Registration</option>
-          <option>Re-registration</option>
-          <option>Bus Fees</option>
-          <option>Stationery Fees</option>
-          <option>Uniform Fees</option>
-          <option>Other/Misc</option>
-        </select><br />
+      <label>Term:</label>
+      <input
+        type="number"
+        value={form.term}
+        onChange={e => setForm({ ...form, term: e.target.value })}
+        placeholder="Enter term"
+      /><br />
 
-        <label>Amount:</label>
-        <input
-          type="number"
-          value={form.amount}
-          onChange={e => setForm({ ...form, amount: e.target.value })}
-        /><br />
+      <label>Date:</label>
+      <input
+        type="date"
+        value={form.date}
+        onChange={e => setForm({ ...form, date: e.target.value })}
+      /><br />
 
-        <button onClick={submitPayment} style={{ marginTop: 10 }}>
-          Submit Payment
-        </button>
-      </div>
+      <label>Payment Method:</label>
+      <select
+        value={form.paymentMethod}
+        onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
+      >
+        <option value="">-- Select --</option>
+        <option>Cash</option>
+        <option>UPI</option>
+        <option>Bank</option>
+      </select><br />
 
-      {/* RIGHT PANEL */}
-      <div style={{ width: "60%" }}>
-        <h2>Payments for {form.studentName || "—"}</h2>
+      <label>Payment Type:</label>
+      <select
+        value={form.paymentType}
+        onChange={e => setForm({ ...form, paymentType: e.target.value })}
+      >
+        <option value="">-- Select --</option>
+        <option>School Fees</option>
+        <option>Registration</option>
+        <option>Re-registration</option>
+        <option>Bus Fees</option>
+        <option>Stationery Fees</option>
+        <option>Uniform Fees</option>
+        <option>Other/Misc</option>
+      </select><br />
 
-        <table border="1" cellPadding="8" width="100%">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Method</th>
-              <th>Type</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.length === 0 ? (
-              <tr>
-                <td colSpan={4} style={{ textAlign: "center" }}>
-                  No payments yet
-                </td>
-              </tr>
-            ) : (
-              payments.map((p, idx) => (
-                <tr key={idx}>
-                  <td>{p.date}</td>
-                  <td>{p.paymentMethod}</td>
-                  <td>{p.paymentType}</td>
-                  <td>{p.amount}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <label>Amount:</label>
+      <input
+        type="number"
+        value={form.amount}
+        onChange={e => setForm({ ...form, amount: e.target.value })}
+      /><br />
+
+      <button onClick={submitPayment} style={{ marginTop: 10 }}>
+        Submit Payment
+      </button>
     </div>
-  );
-}
+
+    {/* RIGHT PANEL */}
+    <div style={{ width: "60%" }}>
+      <h2>Payments for {form.studentName || "—"}</h2>
+
+      <table border="1" cellPadding="8" width="100%">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Method</th>
+            <th>Type</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {payments.length === 0 ? (
+            <tr>
+              <td colSpan={4} style={{ textAlign: "center" }}>
+                No payments yet
+              </td>
+            </tr>
+          ) : (
+            payments.map((p, idx) => (
+              <tr key={idx}>
+                <td>{p.date}</td>
+                <td>{p.paymentMethod}</td>
+                <td>{p.paymentType}</td>
+                <td>{p.amount}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
 
 
 
@@ -430,7 +450,7 @@ function SalaryPaymentUI() {
         </button>
       </div>
 
-      <div style={{ width: "60%" }}>
+   <div style={{ width: "60%" }}>
         <h2>Salary Payment History</h2>
         <table border="1" cellPadding="8" width="100%">
           <thead>
@@ -455,5 +475,5 @@ function SalaryPaymentUI() {
       </div>
     </div>
   );
+};
 }
-

@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-export const AdDashboard = ({ currentUser }) => {
+const AdDashboard = ({ currentUser }) => {
   const [history, setHistory] = useState([]);
-  const [uploadStatus, setUploadStatus] = useState("");
   const API_BASE = import.meta.env.VITE_API_BASE;
 
   // -------------------------
@@ -20,7 +19,7 @@ export const AdDashboard = ({ currentUser }) => {
   }, []);
 
   // -------------------------
-  // CSV export utility
+  // CSV export utility (safe quoting)
   // -------------------------
   const exportCSV = (filename, data, headers) => {
     const csvContent = [
@@ -53,7 +52,7 @@ export const AdDashboard = ({ currentUser }) => {
   };
 
   // -------------------------
-  // Add to history
+  // Add to history (state + localStorage)
   // -------------------------
   const addHistory = (filename, type) => {
     const record = {
@@ -76,58 +75,9 @@ export const AdDashboard = ({ currentUser }) => {
   };
 
   // -------------------------
-  // TEMPLATE CSV
+  // Export Master Report Cards
   // -------------------------
-  const exportStudentTemplate = () => {
-    const headers = [
-      "name",
-      "roll",
-      "contact",
-      "address",
-      "className",
-      "year",
-      "term",
-      "motherName",
-      "fatherName",
-      "dob",
-      "bloodType"
-    ];
-    const data = []; // empty template
-    exportCSV(`student_template_${Date.now()}.csv`, data, headers);
-  };
-
-  // -------------------------
-  // SUBMIT STUDENT DETAILS FILE
-  // -------------------------
-  const handleStudentFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-    try {
-      const res = await fetch(`${API_BASE}/api/students/bulk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sheet),
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-      const result = await res.json();
-      setUploadStatus(`Uploaded ${result.inserted} students successfully.`);
-    } catch (err) {
-      console.error(err);
-      setUploadStatus("Failed to upload student data.");
-    }
-  };
-
-  // -------------------------
-  // Other exports (unchanged)
-  // -------------------------
-const exportReportCards = async () => {
+  const exportReportCards = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/classes`);
       const classes = await res.json();
@@ -162,8 +112,12 @@ const exportReportCards = async () => {
     }
   };
 
-//Student payments
-
+  // -------------------------
+  // Export Student Payments (CSV)
+  // -------------------------
+ // -------------------------
+// Export Student Payments (CSV)
+// -------------------------
 const exportStudentPayments = async () => {
   try {
     // Fetch all students first
@@ -216,9 +170,11 @@ const exportStudentPayments = async () => {
   }
 };
 
-//Misc payments
 
-const exportMiscExpenses = async () => {
+  // -------------------------
+  // Export Misc Expenses (CSV)
+  // -------------------------
+  const exportMiscExpenses = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/misc-expenses`);
       const expenses = await res.json();
@@ -237,10 +193,10 @@ const exportMiscExpenses = async () => {
     }
   };
 
-
-//Salary payments
-
- const exportSalaryPayments = async () => {
+  // -------------------------
+  // Export Salary Payments (XLSX)
+  // -------------------------
+  const exportSalaryPayments = async () => {
     try {
       const staffList = ["Almorah S. Marak", "Anmol Lohar", "Aparna Baidhya", "Balsime N. Sangma", "Barbie", "Bhogte Thapa", "Bhrainsthone  R. Marak", "Bornali Saha", "Cheasa G. Momin", "Chekamangku A. Sangma", "Dilsa A. Sangma", "Jyoti Prabha Hajong", "Kamal Nath Sahoo", "Kanka Saha", "Mayukha", "Moumita Biswas", "Naina Harlalka", "Nisha Rai", "Padma Koch", "Pomme Das", "Poonam Rai", "Richard Awuku", "Richard Roy", "Rima Chowdhury Saha", "Ritah N. Sangma", "Sandera N. Sangma", "Selthindro M. Marak ", "Sengchila M.  Sangma", "Shivani Singh", "Silingchi M. Sangma", "Sonal Gupta", "Sonika ", "Stephanie K. Sangma", "Suman Mazumdar", "Tenghchi M. Marak", "Teacher A"];
       const sheets = [];
@@ -268,7 +224,6 @@ const exportMiscExpenses = async () => {
     }
   };
 
-
   // -------------------------
   // Render
   // -------------------------
@@ -280,11 +235,6 @@ const exportMiscExpenses = async () => {
         <button onClick={exportStudentPayments}>Student Payments (CSV)</button>
         <button onClick={exportMiscExpenses}>Misc Expenses (CSV)</button>
         <button onClick={exportSalaryPayments}>Salary Payments (XLSX)</button>
-        <hr />
-        <h3>Student Upload</h3>
-        <button onClick={exportStudentTemplate}>Template for Submission</button>
-        <input type="file" accept=".csv,.xlsx" onChange={handleStudentFileUpload} />
-        {uploadStatus && <p>{uploadStatus}</p>}
       </div>
 
       <div style={{ flex: 1 }}>

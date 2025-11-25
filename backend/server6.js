@@ -810,6 +810,57 @@ app.get("/api/student-payments/export", async (req, res) => {
   }
 });
 
+// POST /api/students/bulk
+// Expects JSON array of student objects
+app.post("/api/students/bulk", async (req, res) => {
+  const students = req.body; // expect array of student objects
+  if (!Array.isArray(students) || !students.length)
+    return res.status(400).json({ error: "No student data provided" });
+
+  try {
+    const insertValues = [];
+    const placeholders = [];
+    let counter = 1;
+
+    students.forEach((s) => {
+      // Ensure required fields
+      if (!s.name || !s.className || !s.year || !s.term) return;
+
+      placeholders.push(`($${counter++},$${counter++},$${counter++},$${counter++},$${counter++},$${counter++},$${counter++},$${counter++},$${counter++},$${counter++},$${counter++})`);
+
+      insertValues.push(
+        s.name,
+        s.roll ?? null,
+        s.contact ?? null,
+        s.address ?? null,
+        s.className,
+        s.year,
+        s.term,
+        s.motherName ?? null,
+        s.fatherName ?? null,
+        s.dob ?? null,
+        s.bloodType ?? null
+      );
+    });
+
+    if (!insertValues.length) return res.status(400).json({ error: "No valid student data" });
+
+    const query = `
+      INSERT INTO students
+      (name, roll_number, contact, address, class_name, year, term, mother_name, father_name, dob, blood_type)
+      VALUES ${placeholders.join(",")}
+      RETURNING id, name, class_name, year, term
+    `;
+
+    const result = await pool.query(query, insertValues);
+    res.json({ inserted: result.rows.length, students: result.rows });
+  } catch (err) {
+    console.error("Bulk insert error:", err);
+    res.status(500).json({ error: "Failed to insert students", message: err.message });
+  }
+});
+
+
 
 
 /* ---------------------------------------------------

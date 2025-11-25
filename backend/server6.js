@@ -712,6 +712,53 @@ app.delete("/api/student-payments/:id", async (req, res) => {
   }
 });
 
+// GET /api/student-payments/all?class=...&year=...&term=...
+app.get("/api/student-payments/all", async (req, res) => {
+  const { class: className, year, term } = req.query;
+
+  if (!className || !year || !term) {
+    return res.status(400).json({ error: "Missing class, year, or term" });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT student_id, s.name AS studentName, sp.date, sp.payment_method AS "paymentMethod",
+             sp.payment_type AS "paymentType", sp.amount, sp.year, sp.term, 'main' AS source
+      FROM student_payments sp
+      JOIN students s ON sp.student_id = s.id
+      WHERE s.class_name=$1 AND sp.year=$2 AND sp.term=$3
+
+      UNION ALL
+
+      SELECT NULL AS student_id, student_name AS "studentName", date,
+             payment_method AS "paymentMethod", payment_type AS "paymentType",
+             amount, year, term, 'manual' AS source
+      FROM student_payments_manual
+      WHERE class_name=$1 AND year=$2 AND term=$3
+
+      ORDER BY date DESC
+      `,
+      [className, year, term]
+    );
+
+    res.json(result.rows.map(p => ({
+      Student: p.studentName,
+      Date: p.date ? p.date.toISOString().split("T")[0] : "",
+      Type: p.paymentType,
+      Method: p.paymentMethod,
+      Amount: Number(p.amount),
+      Class: className,
+      Year: p.year,
+      Term: p.term,
+      Source: p.source
+    })));
+  } catch (err) {
+    console.error("Fetch all student payments error:", err);
+    res.status(500).json({ error: "Failed to fetch payments." });
+  }
+});
+
 
 // Returns distinct class/year/term from students table
 app.get("/api/classes-from-students", async (req, res) => {

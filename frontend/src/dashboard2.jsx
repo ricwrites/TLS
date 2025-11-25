@@ -115,64 +115,47 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   // Export Student Payments (CSV)
   // -------------------------
-  const exportStudentPayments = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/classes`);
-      const classes = await res.json();
-      if (!Array.isArray(classes) || !classes.length) return alert("No classes found!");
+ const exportStudentPayments = async () => {
+  try {
+    // Fetch all distinct classes/years/terms from students table
+    const resClasses = await fetch(`${API_BASE}/api/classes-from-students`);
+    const classes = await resClasses.json();
+    if (!Array.isArray(classes) || !classes.length) return alert("No classes found!");
 
-      let allPayments = [];
+    let allPayments = [];
 
-      for (const cls of classes) {
-  const studentRes = await fetch(
-  `${API_BASE}/api/students?class=${encodeURIComponent(cls.className)}&year=${cls.year || "2025"}&term=${cls.term || "2"}`
-);
+    // Fetch payments per class/year/term
+    for (const cls of classes) {
+      const { class_name, year, term } = cls;
 
-
-  const students = await studentRes.json();
-  if (!Array.isArray(students)) continue;
-
-  for (const s of students) {
-    try {
-      const paymentRes = await fetch(`${API_BASE}/api/student-payments/${s.id}`);
-      const payments = await paymentRes.json();
-      if (!Array.isArray(payments) || !payments.length) continue;
-
-      allPayments.push(
-        ...payments.map((p) => ({
-          Student: s.name,
-          Date: p.date,
-          Type: p.paymentType,
-          Method: p.paymentMethod,
-          Amount: Number(p.amount),
-          Class: p.className || cls.className,
-          Year: p.year,
-          Term: p.term,
-        }))
+      const res = await fetch(
+        `${API_BASE}/api/student-payments/all?class=${encodeURIComponent(class_name)}&year=${year}&term=${term}`
       );
 
-    } catch (err) {
-      console.error(`Failed to fetch payments for student ${s.id}`, err);
+      const payments = await res.json();
+      if (!Array.isArray(payments) || !payments.length) continue;
+
+      allPayments.push(...payments);
     }
+
+    if (!allPayments.length) return alert("No student payments found!");
+
+    exportCSV(`student_payments_${Date.now()}.csv`, allPayments, [
+      "Student",
+      "Date",
+      "Type",
+      "Method",
+      "Amount",
+      "Class",
+      "Year",
+      "Term",
+      "Source"
+    ]);
+  } catch (err) {
+    console.error("Error exporting student payments:", err);
   }
-}
+};
 
-
-      if (!allPayments.length) return alert("No student payments found!");
-      exportCSV(`student_payments_${Date.now()}.csv`, allPayments, [
-        "Student",
-        "Date",
-        "Type",
-        "Method",
-        "Amount",
-        "Class",
-        "Year",
-        "Term",
-      ]);
-    } catch (err) {
-      console.error("Error exporting student payments:", err);
-    }
-  };
 
   // -------------------------
   // Export Misc Expenses (CSV)
@@ -201,7 +184,7 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   const exportSalaryPayments = async () => {
     try {
-      const staffList = ["Principal", "Teacher A", "Teacher B", "Accountant", "Driver", "Helper"];
+      const staffList = ["Almorah S. Marak", "Anmol Lohar", "Aparna Baidhya", "Balsime N. Sangma", "Barbie", "Bhogte Thapa", "Bhrainsthone  R. Marak", "Bornali Saha", "Cheasa G. Momin", "Chekamangku A. Sangma", "Dilsa A. Sangma", "Jyoti Prabha Hajong", "Kamal Nath Sahoo", "Kanka Saha", "Mayukha", "Moumita Biswas", "Naina Harlalka", "Nisha Rai", "Padma Koch", "Pomme Das", "Poonam Rai", "Richard Awuku", "Richard Roy", "Rima Chowdhury Saha", "Ritah N. Sangma", "Sandera N. Sangma", "Selthindro M. Marak ", "Sengchila M.  Sangma", "Shivani Singh", "Silingchi M. Sangma", "Sonal Gupta", "Sonika ", "Stephanie K. Sangma", "Suman Mazumdar", "Tenghchi M. Marak", "Teacher A"];
       const sheets = [];
 
       for (const staff of staffList) {

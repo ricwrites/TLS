@@ -115,31 +115,45 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   // Export Student Payments (CSV)
   // -------------------------
- const exportStudentPayments = async () => {
+ // -------------------------
+// Export Student Payments (CSV)
+// -------------------------
+const exportStudentPayments = async () => {
   try {
-    // Fetch all distinct classes/years/terms from students table
-    const resClasses = await fetch(`${API_BASE}/api/classes-from-students`);
-    const classes = await resClasses.json();
-    if (!Array.isArray(classes) || !classes.length) return alert("No classes found!");
+    // Fetch all students first
+    const studentsRes = await fetch(`${API_BASE}/api/students/all`);
+    const students = await studentsRes.json();
 
-    let allPayments = [];
+    if (!Array.isArray(students) || !students.length) {
+      return alert("No students found!");
+    }
 
-    // Fetch payments per class/year/term
-    for (const cls of classes) {
-      const { class_name, year, term } = cls;
+    // Fetch payments for each student
+    const allPayments = [];
 
-      const res = await fetch(
-        `${API_BASE}/api/student-payments/all?class=${encodeURIComponent(class_name)}&year=${year}&term=${term}`
-      );
-
+    for (const student of students) {
+      const res = await fetch(`${API_BASE}/api/student-payments/${student.id}`);
       const payments = await res.json();
-      if (!Array.isArray(payments) || !payments.length) continue;
 
-      allPayments.push(...payments);
+      if (Array.isArray(payments) && payments.length) {
+        payments.forEach(p => {
+          allPayments.push({
+            Student: student.name,
+            Date: p.date,
+            Type: p.paymentType,
+            Method: p.paymentMethod,
+            Amount: p.amount,
+            Class: student.class_name,
+            Year: student.year,
+            Term: student.term
+          });
+        });
+      }
     }
 
     if (!allPayments.length) return alert("No student payments found!");
 
+    // Export CSV
     exportCSV(`student_payments_${Date.now()}.csv`, allPayments, [
       "Student",
       "Date",
@@ -148,11 +162,11 @@ export const AdDashboard = ({ currentUser }) => {
       "Amount",
       "Class",
       "Year",
-      "Term",
-      "Source"
+      "Term"
     ]);
   } catch (err) {
     console.error("Error exporting student payments:", err);
+    alert("Failed to export student payments.");
   }
 };
 

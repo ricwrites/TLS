@@ -775,6 +775,40 @@ app.get("/api/classes-from-students", async (req, res) => {
   }
 });
 
+// GET /api/student-payments/export
+app.get("/api/student-payments/export", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT s.name AS "Student", sp.date AS "Date",
+             sp.payment_type AS "Type", sp.payment_method AS "Method",
+             sp.amount AS "Amount", s.class_name AS "Class",
+             sp.year AS "Year", sp.term AS "Term"
+      FROM student_payments sp
+      JOIN students s ON sp.student_id = s.id
+
+      UNION ALL
+
+      SELECT student_name AS "Student", date AS "Date",
+             payment_type AS "Type", payment_method AS "Method",
+             amount AS "Amount", class_name AS "Class",
+             year AS "Year", term AS "Term"
+      FROM student_payments_manual
+
+      ORDER BY "Date" DESC
+    `);
+
+    // Convert date to YYYY-MM-DD string
+    const payments = result.rows.map(p => ({
+      ...p,
+      Date: p.Date ? p.Date.toISOString().split("T")[0] : ""
+    }));
+
+    res.json(payments);
+  } catch (err) {
+    console.error("Export all student payments error:", err);
+    res.status(500).json({ error: "Failed to fetch student payments" });
+  }
+});
 
 
 

@@ -390,26 +390,83 @@ app.get("/api/student-payments/:studentId", async (req, res) => {
 
 
 // POST /api/student-payments
-app.post("/api/student-payments", async (req, res) => {
-  const { studentId, date, paymentMethod, paymentType, amount, year, term } = req.body;
+app.post("/api/student-payments/from-manual", async (req, res) => {
+  const {
+    studentName,
+    className,
+    date,
+    paymentMethod,
+    paymentType,
+    amount,
+    year,
+    term
+  } = req.body;
+
+  // Set defaults for year/term if missing
+  const safeYear = year || "2025";
+  const safeTerm = term || "2";
+
+  // Validate required fields
+  if (!studentName || !className || !amount || !paymentType) {
+    return res.status(400).json({
+      error: "Missing required fields: studentName, className, amount, paymentType"
+    });
+  }
 
   try {
+    /* -------------------------------------------
+       1. CHECK IF STUDENT ALREADY EXISTS
+    ------------------------------------------- */
+    const existing = await pool.query(
+      `SELECT id FROM students
+       WHERE name=$1 AND class_name=$2 AND year=$3 AND term=$4`,
+      [studentName, className, safeYear, safeTerm]
+    );
+
+    let studentId;
+
+    if (existing.rows.length > 0) {
+      // Student found
+      studentId = existing.rows[0].id;
+    } else {
+      /* -------------------------------------------
+         2. INSERT STUDENT IF NOT EXISTING
+      ------------------------------------------- */
+      const insertStudent = await pool.query(
+        `INSERT INTO students (name, class_name, year, term)
+         VALUES ($1,$2,$3,$4)
+         RETURNING id`,
+        [studentName, className, safeYear, safeTerm]
+      );
+
+      studentId = insertStudent.rows[0].id;
+    }
+
+    /* -------------------------------------------
+       3. INSERT PAYMENT ENTRY
+    ------------------------------------------- */
     await pool.query(
       `INSERT INTO student_payments
        (student_id, date, payment_method, payment_type, amount, year, term)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [studentId, date, paymentMethod, paymentType, amount, year, term]
+      [studentId, date, paymentMethod, paymentType, amount, safeYear, safeTerm]
     );
 
-    // Fetch all payments for the student to display immediately
+    /* -------------------------------------------
+       4. RETURN UPDATED PAYMENT LIST
+    ------------------------------------------- */
     const paymentsResult = await pool.query(
-      `SELECT * FROM student_payments WHERE student_id=$1 ORDER BY date DESC`,
+      `SELECT * FROM student_payments
+       WHERE student_id=$1
+       ORDER BY date DESC`,
       [studentId]
     );
 
     const payments = paymentsResult.rows.map(p => ({
       id: p.id,
       studentId: p.student_id,
+      studentName,
+      className,
       date: p.date ? p.date.toISOString().split("T")[0] : null,
       paymentMethod: p.payment_method,
       paymentType: p.payment_type,
@@ -418,12 +475,17 @@ app.post("/api/student-payments", async (req, res) => {
       term: p.term
     }));
 
-    res.json({ studentId, payments }); // send back full payments for immediate table update
+    res.json({ studentId, studentName, className, payments });
+
   } catch (err) {
-    console.error("Insert student payment error:", err);
-    res.status(500).json({ error: "Database insert failed", message: err.message });
+    console.error("Manual payment error:", err);
+    res.status(500).json({
+      error: "Database error",
+      message: err.message
+    });
   }
 });
+
 
 
 /* ---------------------------------------------------

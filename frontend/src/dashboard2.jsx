@@ -125,8 +125,9 @@ export const AdDashboard = ({ currentUser }) => {
 
       for (const cls of classes) {
   const studentRes = await fetch(
-    `${API_BASE}/api/students?class=${encodeURIComponent(cls.className)}&year=${cls.year}&term=${cls.term}`
-  );
+  `${API_BASE}/api/students?class=${encodeURIComponent(cls.className)}&year=${cls.year || "2025"}&term=${cls.term || "2"}`
+);
+
 
   const students = await studentRes.json();
   if (!Array.isArray(students)) continue;

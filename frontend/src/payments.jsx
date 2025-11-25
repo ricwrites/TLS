@@ -113,27 +113,27 @@ function StudentPaymentUI() {
           value={form.studentName}
           onChange={(e) => setForm({ ...form, studentName: e.target.value })}
           placeholder="Enter student name"
-        />
+        /><br />
 
         <label>Payment Date:</label>
         <input
           type="date"
           value={form.date}
           onChange={e => setForm({ ...form, date: e.target.value })}
-        />
+        /><br />
 
         <label>Payment Method:</label>
         <input
           value={form.payment_method}
           onChange={e => setForm({ ...form, payment_method: e.target.value })}
           placeholder="Cash / UPI / Bank"
-        />
+        /><br />
 
         <label>Payment Type:</label>
         <select
           value={form.payment_type}
           onChange={e => setForm({ ...form, payment_type: e.target.value })}
-        >
+        ><br />
           <option value="">-- Select --</option>
           <option>School Fees</option>
           <option>Registration</option>
@@ -142,14 +142,14 @@ function StudentPaymentUI() {
           <option>Stationery Fees</option>
           <option>Uniform Fees</option>
           <option>Other/Misc</option>
-        </select>
+        </select><br />
 
         <label>Amount:</label>
         <input
           type="number"
           value={form.amount}
           onChange={e => setForm({ ...form, amount: e.target.value })}
-        />
+        /><br />
 
         <button onClick={submitPayment} style={{ marginTop: 10 }}>
           Submit Payment
@@ -362,27 +362,27 @@ function SalaryPaymentUI() {
           {staffList.map((s, i) => (
             <option key={i}>{s}</option>
           ))}
-        </select>
+        </select><br />
 
         <label>Date:</label>
         <input
           type="date"
           value={form.date}
           onChange={e => setForm({ ...form, date: e.target.value })}
-        />
+        /><br />
 
         <label>Month:</label>
         <input
           value={form.month}
           onChange={e => setForm({ ...form, month: e.target.value })}
-        />
+        /><br />
 
         <label>Amount:</label>
         <input
           type="number"
           value={form.amount}
           onChange={e => setForm({ ...form, amount: e.target.value })}
-        />
+        /><br />
 
         <label>Mode:</label>
         <select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value })}>
@@ -390,7 +390,7 @@ function SalaryPaymentUI() {
           <option>Cash</option>
           <option>UPI</option>
           <option>Bank Transfer</option>
-        </select>
+        </select><br />
 
         <button onClick={submit} style={{ marginTop: 10 }}>
           Submit Salary

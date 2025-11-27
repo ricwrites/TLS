@@ -138,43 +138,44 @@ background: lightgreen;
 
 
 
-/* ----------------------------- */
-/* TRUE MOBILE FIX (Stack Layout) */
-/* ----------------------------- */
+/* -------------------------------------------- */
+/* MOBILE FIX: ORDERED LIKE A PROPER DROID ARMY */
+/* -------------------------------------------- */
 @media (max-width: 600px) {
 
-  /* Remove absolute positioning – allow natural flow */
+  /* Remove absolute positioning – restore natural stacking order */
   .subbuttons,
   .CTbuttons,
   .classtab,
   .navga {
     position: static !important;
     width: 100% !important;
-    margin: 10px auto !important;
+    margin: 15px 0 !important;
   }
 
-  /* Fix the grids so buttons wrap safely */
+  /* First row of subject buttons */
   .subbuttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 6px !important;
-    padding: 10px !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 12px !important;
   }
 
+  /* CT buttons come BELOW subbuttons, as requested */
   .CTbuttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 6px !important;
-    padding: 10px !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 12px !important;
   }
 
-  /* Sidebar navigation */
+  /* Sidebar navigation becomes tidy */
   .navga {
     display: flex !important;
-    flex-direction: row !important;
     flex-wrap: wrap !important;
     justify-content: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
+    padding: 10px !important;
   }
 
   /* Titles centered */
@@ -194,7 +195,11 @@ background: lightgreen;
     font-size: 20px !important;
   }
 
-  /* Table responsive */
+  /* Responsive table for student names */
+  .classtab {
+    margin-top: 20px !important;
+  }
+
   table {
     width: 100% !important;
     font-size: 12px !important;
@@ -204,9 +209,8 @@ background: lightgreen;
     padding: 4px !important;
   }
 
-  /* Prevent overflow */
+  /* No horizontal scrolling */
   body {
     overflow-x: hidden !important;
   }
 }
-

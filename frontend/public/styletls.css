@@ -137,3 +137,126 @@ background: lightgreen;
 }
 
 
+
+
+/* ------------------------- */
+/*   MOBILE RESPONSIVE CSS   */
+/* ------------------------- */
+
+/* Medium screens – Tablets */
+@media (max-width: 768px) {
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .headimg {
+    float: none;
+    margin: 0 auto;
+    height: 120px;
+  }
+
+  .pagetitle {
+    font-size: 32px;
+    text-align: center;
+    right: 0;
+    position: static;
+    margin-top: 10px;
+  }
+
+  .pagesubtitle {
+    font-size: 22px;
+    text-align: center;
+    position: static;
+    margin-top: 5px;
+  }
+
+  /* Sidebar nav becomes full-width top bar */
+  .navga {
+    position: static;
+    width: 90%;
+    margin: 10px auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 20px;
+    gap: 10px;
+  }
+
+  .loginbit, .hometext {
+    margin: 0 auto;
+    width: 95%;
+    margin-top: 20px;
+  }
+
+  /* Smaller button grid */
+  .subbuttons,
+  .CTbuttons {
+    position: static;
+    grid-template-columns: repeat(3, 1fr);
+    width: 90%;
+    margin: 10px auto;
+    padding-left: 0;
+  }
+
+  .classtab {
+    position: static;
+    width: 95%;
+    margin: 20px auto;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  td, th {
+    padding: 4px;
+  }
+}
+
+/* Small screens – Mobile phones */
+@media (max-width: 480px) {
+
+  .pagetitle {
+    font-size: 26px;
+  }
+
+  .pagesubtitle {
+    font-size: 18px;
+  }
+
+  .headimg {
+    height: 90px;
+  }
+
+  .navga {
+    width: 100%;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  /* Buttons become single-column */
+  .subbuttons,
+  .CTbuttons {
+    grid-template-columns: repeat(2, 1fr);
+    font-size: 12px;
+  }
+
+  .classtab {
+    width: 100%;
+  }
+
+  table {
+    font-size: 10px;
+  }
+
+  td, th {
+    padding: 3px;
+  }
+}
+

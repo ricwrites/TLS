@@ -138,125 +138,75 @@ background: lightgreen;
 
 
 
+/* ----------------------------- */
+/* TRUE MOBILE FIX (Stack Layout) */
+/* ----------------------------- */
+@media (max-width: 600px) {
 
-/* ------------------------- */
-/*   MOBILE RESPONSIVE CSS   */
-/* ------------------------- */
+  /* Remove absolute positioning – allow natural flow */
+  .subbuttons,
+  .CTbuttons,
+  .classtab,
+  .navga {
+    position: static !important;
+    width: 100% !important;
+    margin: 10px auto !important;
+  }
 
-/* Medium screens – Tablets */
-@media (max-width: 768px) {
+  /* Fix the grids so buttons wrap safely */
+  .subbuttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    padding: 10px !important;
+  }
 
+  .CTbuttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    padding: 10px !important;
+  }
+
+  /* Sidebar navigation */
+  .navga {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+
+  /* Titles centered */
+  .pagetitle,
+  .pagesubtitle {
+    position: static !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    display: block !important;
+  }
+
+  .pagetitle {
+    font-size: 28px !important;
+  }
+
+  .pagesubtitle {
+    font-size: 20px !important;
+  }
+
+  /* Table responsive */
+  table {
+    width: 100% !important;
+    font-size: 12px !important;
+  }
+
+  td, th {
+    padding: 4px !important;
+  }
+
+  /* Prevent overflow */
   body {
-    overflow-x: hidden;
-  }
-
-  .header {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .headimg {
-    float: none;
-    margin: 0 auto;
-    height: 120px;
-  }
-
-  .pagetitle {
-    font-size: 32px;
-    text-align: center;
-    right: 0;
-    position: static;
-    margin-top: 10px;
-  }
-
-  .pagesubtitle {
-    font-size: 22px;
-    text-align: center;
-    position: static;
-    margin-top: 5px;
-  }
-
-  /* Sidebar nav becomes full-width top bar */
-  .navga {
-    position: static;
-    width: 90%;
-    margin: 10px auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    border-radius: 20px;
-    gap: 10px;
-  }
-
-  .loginbit, .hometext {
-    margin: 0 auto;
-    width: 95%;
-    margin-top: 20px;
-  }
-
-  /* Smaller button grid */
-  .subbuttons,
-  .CTbuttons {
-    position: static;
-    grid-template-columns: repeat(3, 1fr);
-    width: 90%;
-    margin: 10px auto;
-    padding-left: 0;
-  }
-
-  .classtab {
-    position: static;
-    width: 95%;
-    margin: 20px auto;
-  }
-
-  table {
-    font-size: 12px;
-  }
-
-  td, th {
-    padding: 4px;
-  }
-}
-
-/* Small screens – Mobile phones */
-@media (max-width: 480px) {
-
-  .pagetitle {
-    font-size: 26px;
-  }
-
-  .pagesubtitle {
-    font-size: 18px;
-  }
-
-  .headimg {
-    height: 90px;
-  }
-
-  .navga {
-    width: 100%;
-    padding: 6px;
-    border-radius: 10px;
-  }
-
-  /* Buttons become single-column */
-  .subbuttons,
-  .CTbuttons {
-    grid-template-columns: repeat(2, 1fr);
-    font-size: 12px;
-  }
-
-  .classtab {
-    width: 100%;
-  }
-
-  table {
-    font-size: 10px;
-  }
-
-  td, th {
-    padding: 3px;
+    overflow-x: hidden !important;
   }
 }
 

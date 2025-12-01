@@ -231,7 +231,7 @@ height: 30px;
 
 .CTbuttons3up {
 position: absolute;
-top: 670px;
+top: 570px;
 width: 100%;
 left: 240px;
 border: solid 2px #c00000;
@@ -245,7 +245,7 @@ grid-template-columns: repeat(7,14%);
 
 .classtab3up {
 position: absolute;
-top:950px;
+top:750px;
 left: 240px;
 width: 1000px;
 }

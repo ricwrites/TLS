@@ -181,31 +181,7 @@ function submitData() {
     data[student][subject] = value;
   });
 
- function submitData() {
-  const className = document.getElementById('className')?.value.trim() || 'UnknownClass';
-  const year = document.getElementById('yearSelect').value;  // from dropdown
-  const term = document.getElementById('termSelect').value;
-
-
-  const inputs = document.querySelectorAll('input[data-student]');
-  const data = {};
-
-  inputs.forEach(input => {
-    const student = input.dataset.student;
-    const subject = input.dataset.subject;
-    const value = input.value || null;
-
-    if (!data[student]) data[student] = {};
-    data[student][subject] = value;
-  });
-
-  const payload = {
-    className,
-    year,
-    term,
-    marks: data
-  };
-
+ 
 
 
 fetch(`${API_BASE}/submit`, {

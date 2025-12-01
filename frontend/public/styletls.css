@@ -214,3 +214,38 @@ background: lightgreen;
     overflow-x: hidden !important;
   }
 }
+
+
+.subbuttons3up {
+position: absolute;
+top: 240px;
+width: 100%;
+left: 240px;
+border: solid 2px #c00000;
+width: fit-content;
+display: grid;
+grid-template-columns: repeat(8,12.5%); 
+padding-left: 30px;
+height: 30px;
+}
+
+.CTbuttons3up {
+position: absolute;
+top: 670px;
+width: 100%;
+left: 240px;
+border: solid 2px #c00000;
+width: fit-content;
+display: grid;
+grid-template-columns: repeat(7,14%);
+
+
+}
+
+
+.classtab3up {
+position: absolute;
+top:950px;
+left: 240px;
+width: 1000px;
+}

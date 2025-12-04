@@ -206,9 +206,9 @@ function submitData() {
 
 
 fetch(`${API_BASE}/submit`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   })
   .then(res => res.json())
   .then(resp => {
@@ -220,7 +220,7 @@ fetch(`${API_BASE}/submit`, {
     alert("Failed to submit data. Check console for errors.");
   });
 }
-
-  </script>
+</script>
+ 
 </body>
 </html>

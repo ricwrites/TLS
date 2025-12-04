@@ -181,7 +181,28 @@ function submitData() {
     data[student][subject] = value;
   });
 
- 
+  const payload = {
+    className,
+    year,
+    term,
+    marks: data
+  };
+
+  fetch(`${API_BASE}/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(resp => {
+    console.log("Server response:", resp);
+    alert("Data submitted successfully!");
+  })
+  .catch(err => {
+    console.error("Error submitting data:", err);
+    alert("Failed to submit data. Check console for errors.");
+  });
+}
 
 
 fetch(`${API_BASE}/submit`, {

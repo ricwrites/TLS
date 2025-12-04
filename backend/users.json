@@ -26,6 +26,7 @@
   { "username": "sonika", "password": "sonika", "role": "teacher" },
   { "username": "tengmitchi", "password": "tengmitchi", "role": "teacher" },
   { "username": "chukamchi", "password": "chukamchi", "role": "teacher" },
+  { "username": "thrawn", "password": "thrawn", "role": "admin" },
   { "username": "ricroy", "password": "order66", "role": "admin" },
   { "username": "sonal", "password": "sonal", "role": "admin" },
   { "username": "tyrone", "password": "tyrone", "role": "admin" }

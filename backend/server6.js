@@ -21,11 +21,17 @@ const users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
 /* ---------------------------------------------------
    POSTGRES
 ----------------------------------------------------*/
-const { Pool } = pg;
-const pool = new Pool({
-  connectionString: process.env.DB_URL,
-  //ssl: { rejectUnauthorized: false }
-});
+
+import { parse } from "pg-connection-string";
+
+// Parse the connection string from environment variable
+const config = parse(process.env.DB_URL);
+
+// Enforce SSL (needed for Supabase on Render)
+config.ssl = { rejectUnauthorized: false };
+
+// Create the pool
+const pool = new pg.Pool(config);
 
 /* ---------------------------------------------------
    MIDDLEWARE

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 export function StudentDeets() {
-  const API = "https://tls-server.com";  // ✅ your backend root (Render)
+  const API = import.meta.env.VITE_API_URL; 
 
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');

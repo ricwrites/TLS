@@ -4,9 +4,6 @@ import { saveAs } from "file-saver";
 
 export const AdDashboard = ({ currentUser }) => {
   const [history, setHistory] = useState([]);
-  const API_BASE = import.meta.env.VITE_API_BASE;
-
-
 
   // -------------------------
   // Load history from localStorage on mount
@@ -68,7 +65,7 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   const exportReportCards = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/classes`);
+      const res = await fetch("http://localhost:4040/api/classes");
       const classes = await res.json();
 
       if (!classes.length) return alert("No class data available");
@@ -107,19 +104,20 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   const exportStudentPayments = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/classes`);
+      const res = await fetch("http://localhost:4040/api/classes");
       const classes = await res.json();
 
       let allPayments = [];
 
       for (const cls of classes) {
-        const studentRes = await fetch(`${API_BASE}/api/students/${encodeURIComponent(cls.className)}?year=${cls.year}&term=${cls.term}`);
-
+        const studentRes = await fetch(
+          `http://localhost:4040/api/students/${cls.className}?year=${cls.year}&term=${cls.term}`
+        );
         const students = await studentRes.json();
 
         for (const s of students) {
           try {
-            const paymentRes = await fetch(`${API_BASE}/api/student-payments/${s.id}`);
+            const paymentRes = await fetch(`/api/student-payments/${s.id}`);
             const payments = await paymentRes.json();
 
             if (Array.isArray(payments) && payments.length) {
@@ -162,7 +160,7 @@ export const AdDashboard = ({ currentUser }) => {
 
   const exportMiscExpenses = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/misc-expenses`);
+      const res = await fetch("http://localhost:4040/api/misc-expenses");
       const expenses = await res.json();
 
       if (!Array.isArray(expenses) || !expenses.length) {
@@ -186,7 +184,7 @@ export const AdDashboard = ({ currentUser }) => {
       const sheets = [];
 
       for (const staff of staffList) {
-        const res = await fetch(`${API_BASE}/api/salary/${encodeURIComponent(staff)}`);
+        const res = await fetch(`/api/salary/${encodeURIComponent(staff)}`);
         const payments = await res.json();
 
         if (Array.isArray(payments) && payments.length) {

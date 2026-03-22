@@ -2,8 +2,11 @@ import './admin.css';
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { Payments } from './paymentsalt.jsx';
-import { AdDashboard } from './dashboard2.jsx';
+import { Payments } from './payments2.jsx';
+import { AdDashboard } from './dashboard.jsx';
+import { Link } from "react-router-dom";
+import { EventSubmission } from "./Events.jsx";
+import { NewsletterAdmin } from "./newsletters.jsx";
 
 
 
@@ -12,13 +15,9 @@ export const ReportCards = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
-  const API_BASE = import.meta.env.VITE_API_BASE;
-
-
-  
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/classes`)
+    fetch('/api/classes')
       .then(res => res.json())
       .then(data => setClasses(data))
       .catch(err => console.error('Error fetching classes:', err));
@@ -141,7 +140,9 @@ export const ReportCards = () => {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(currentClass.marks).map(([student, scores]) => (
+                {Object.entries(currentClass.marks)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([student, scores]) => (
                   <tr key={student}>
                     <td>{student}</td>
                     {subjects.map(sub => <td key={sub}>{scores[sub] || ''}</td>)}
@@ -160,9 +161,6 @@ export const ReportCards = () => {
   );
 };
 
-
-
-const API_BASE = import.meta.env.VITE_API_BASE; // <-- environment variable
 
 export function StudentDetails() {
   const [classes, setClasses] = useState([]);
@@ -184,7 +182,7 @@ export function StudentDetails() {
 
   // Fetch all classes
   useEffect(() => {
-    fetch(`${API_BASE}/api/classes`)
+    fetch('http://localhost:4040/api/classes')
       .then(res => res.json())
       .then(data => setClasses(data))
       .catch(err => console.error('Error fetching classes:', err));
@@ -199,7 +197,7 @@ export function StudentDetails() {
       return;
     }
 
-    fetch(`${API_BASE}/api/students?class=${encodeURIComponent(selectedClass)}&year=${currentYear}&term=${currentTerm}`)
+    fetch(`/api/students/${encodeURIComponent(selectedClass)}?year=${currentYear}&term=${currentTerm}`)
       .then(res => res.json())
       .then(data => {
         const formatted = data.map(s => ({
@@ -209,7 +207,7 @@ export function StudentDetails() {
           fatherName: s.father_name || '',
           contact: s.contact || '',
           address: s.address || '',
-          dob: s.dob ? s.dob.split("T")[0] : '',
+          dob: s.dob ? s.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
           bloodType: s.blood_type || ''
         }));
         setStudents(formatted);
@@ -229,7 +227,7 @@ export function StudentDetails() {
       fatherName: student?.fatherName || '',
       contact: student?.contact || '',
       address: student?.address || '',
-      dob: student?.dob || '',
+      dob: student?.dob ? student.dob.split("T")[0] : '', // ✅ Only YYYY-MM-DD
       bloodType: student?.bloodType || ''
     });
   };
@@ -251,7 +249,7 @@ export function StudentDetails() {
 
       let res;
       if (activeStudent?.id) {
-        res = await fetch(`${API_BASE}/api/students/${activeStudent.id}`, {
+        res = await fetch(`http://localhost:4040/api/students/${activeStudent.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bodyData)
@@ -272,16 +270,19 @@ export function StudentDetails() {
       const savedStudent = await res.json();
       alert(activeStudent ? "Student updated!" : "Student added!");
 
+      // Update students array immediately with DOB formatted for table/input
       setStudents(prev => {
         const existing = prev.find(s => s.id === savedStudent.id);
         const formattedStudent = {
           id: savedStudent.id,
           name: savedStudent.name,
-          motherName: savedStudent.mother_name ?? existing?.motherName ?? '',
-          fatherName: savedStudent.father_name ?? existing?.fatherName ?? '',
-          contact: savedStudent.contact ?? existing?.contact ?? '',
-          address: savedStudent.address ?? existing?.address ?? '',
-          dob: savedStudent.dob ? new Date(savedStudent.dob).toISOString().split('T')[0] : existing?.dob ?? '',
+          motherName: savedStudent.mother_name || existing?.motherName || '',
+          fatherName: savedStudent.father_name || existing?.fatherName || '',
+          contact: savedStudent.contact || existing?.contact || '',
+          address: savedStudent.address || existing?.address || '',
+          dob: savedStudent.dob
+        ? new Date(savedStudent.dob).toISOString().split('T')[0]  // YYYY-MM-DD
+        : existing?.dob ?? '', // ✅ YYYY-MM-DD
           bloodType: savedStudent.blood_type ?? existing?.bloodType ?? ''
         };
 
@@ -304,20 +305,28 @@ export function StudentDetails() {
       {/* LEFT PANEL: FORM */}
       <div style={{ width: '40%', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
         <h2>{activeStudent ? 'Edit Student' : 'Add New Student'}</h2>
-        {["name","motherName","fatherName","contact","address","dob","bloodType"].map(field => (
-          <>
-            <label>{field === "dob" ? "Date of Birth" : field.replace(/([A-Z])/g, ' $1')}</label>
-            <input
-              key={field}
-              name={field}
-              type={field === "dob" ? "date" : "text"}
-              value={formData[field]}
-              onChange={updateForm}
-              style={{ width: '100%', marginBottom: '10px' }}
-              placeholder={field === "bloodType" ? "A+, O-, B+, etc." : ""}
-            />
-          </>
-        ))}
+
+        <label>Name:</label>
+        <input name="name" value={formData.name} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Mother's Name:</label>
+        <input name="motherName" value={formData.motherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Father's Name:</label>
+        <input name="fatherName" value={formData.fatherName} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Contact:</label>
+        <input name="contact" value={formData.contact} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Address:</label>
+        <input name="address" value={formData.address} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Date of Birth:</label>
+        <input type="date" name="dob" value={formData.dob} onChange={updateForm} style={{ width: '100%', marginBottom: '10px' }} />
+
+        <label>Blood Type:</label>
+        <input name="bloodType" value={formData.bloodType} onChange={updateForm} placeholder="A+, O-, B+, etc." style={{ width: '100%', marginBottom: '10px' }} />
+
         <div style={{ marginTop: '15px' }}>
           <button onClick={saveStudent} style={{ padding: '10px 15px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
             {activeStudent ? 'Save Changes' : 'Add Student'}
@@ -375,6 +384,7 @@ export function StudentDetails() {
 }
 
 
+
 export const Dashboard = () => {
 return <AdDashboard />
 };
@@ -392,11 +402,92 @@ return <Payments />;
 export const ToRoot = () => {
   return (
     <div>
-      <button onClick={() => window.location.href = '/login.html'}>
+      <button onClick={() => window.location.href = `https://thelearningsanctuarytura.onrender.com/`}>
         Back to Main Menu
       </button>
     </div>
   );
+};
+
+
+
+export const CertificatesHome = () => {
+  return (
+    <div className="page">
+      <h2>Certificates</h2>
+
+      <Link to="/certificates/transfer">
+        <button>Transfer Certificate</button>
+      </Link>
+
+      {/* future */}
+      {/* <Link to="/certificates/contest">
+        <button>Contest Certificate</button>
+      </Link> */}
+    </div>
+  );
+};
+
+
+
+export const TransferCertificate = () => {
+  const [form, setForm] = useState({
+    studentName: "",
+    PENNo: "",
+    No: "",
+    motherName: "",
+    className: "",
+    admissionNo: "",
+    dob: "",
+    startingDate: "",
+    leavingDate: "",
+    feesDate: "",
+    conduct: "",
+  });
+
+  const update = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const printTC = () => {
+    // Fill hidden template
+    document.getElementById("tc-student-name").innerText = form.studentName;
+    document.getElementById("tc-no").innerText = form.No;
+    document.getElementById("tc-pen-no").innerText = form.PENNo;
+    document.getElementById("tc-mother-name").innerText = form.motherName;
+    document.getElementById("tc-class").innerText = form.className;
+    document.getElementById("tc-admission").innerText = form.admissionNo;
+    document.getElementById("tc-dob").innerText = form.dob;
+    document.getElementById("tc-starting").innerText = form.startingDate;
+    document.getElementById("tc-leaving").innerText = form.leavingDate;
+    document.getElementById("tc-fees-date").innerText = form.feesDate;    
+    document.getElementById("tc-conduct").innerText = form.conduct;
+
+    window.print();
+  };
+
+  return (
+    <div className="page">
+      <h2>Transfer Certificate</h2>
+
+      Student's name: <input name="studentName" placeholder="Student Name" onChange={update} /> <br />
+      Mother's name: <input name="motherName" placeholder="Mother's Name" onChange={update} /> <br />
+      Class: <input name="className" placeholder="Class" onChange={update} /> <br />
+      Admission no: <input name="admissionNo" placeholder="Admission No" onChange={update} /> <br />
+      Date of Birth: <input name="dob" type="date" onChange={update} />  <br />
+      Leaving date: <input name="leavingDate" type="date" onChange={update} />  <br />
+      Reason for leaving: <textarea name="reason" placeholder="Reason for Leaving" onChange={update} /> <br />
+
+      <button onClick={printTC}>Print TC</button>
+    </div>
+  );
+};
+
+export const Events = () => {
+    return <EventSubmission />;
+};
+
+export const Newsletter = () => {
+    return <NewsletterAdmin />;
 };
 
 

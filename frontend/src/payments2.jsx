@@ -139,7 +139,7 @@ function StudentPaymentUI() {
   const term = "2";
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/classes")
+    fetch(`${API_BASE}/api/classes`)
       .then(r => r.json())
       .then(setClasses);
   }, []);
@@ -147,7 +147,7 @@ function StudentPaymentUI() {
   useEffect(() => {
     if (!selectedClass) return;
 
-    fetch(`http://localhost:4040/api/students/${selectedClass}?year=${year}&term=${term}`)
+    fetch(`${API_BASE}/api/students/${selectedClass}?year=${year}&term=${term}`)
       .then(r => r.json())
       .then(setStudents);
   }, [selectedClass]);
@@ -155,7 +155,7 @@ function StudentPaymentUI() {
   useEffect(() => {
     if (!studentId) return;
 
-    fetch(`http://localhost:4040/api/student-payments/${studentId}`)
+    fetch(`${API_BASE}/api/student-payments/${studentId}`)
       .then(r => r.json())
       .then(data => setPayments(data));
   }, [studentId]);
@@ -171,7 +171,7 @@ function StudentPaymentUI() {
       term
     };
 
-    const res = await fetch(`${API_BASE}/api/student-payments", {
+    const res = await fetch(`${API_BASE}/api/student-payments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
@@ -265,13 +265,13 @@ function MiscPaymentUI() {
   const [form, setForm] = useState({ date: "", category: "", description: "", amount: "" });
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/misc-expenses")
+    fetch(`${API_BASE}/api/misc-expenses`)
       .then(r => r.json())
       .then(setExpenses);
   }, []);
 
   const submit = async () => {
-    const res = await fetch(`${API_BASE}/api/misc-expenses", {
+    const res = await fetch(`${API_BASE}/api/misc-expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
@@ -351,7 +351,7 @@ function SalaryPaymentUI() {
   useEffect(() => {
     if (!selected) return;
 
-    fetch(`http://localhost:4040/api/salary/${selected}`)
+    fetch(`${API_BASE}/api/salary/${selected}`)
       .then(r => r.json())
       .then(setPayments);
   }, [selected]);
@@ -359,7 +359,7 @@ function SalaryPaymentUI() {
   const submit = async () => {
     const body = { staff_name: selected, ...form };
 
-    const res = await fetch(`${API_BASE}/api/salary", {
+    const res = await fetch(`${API_BASE}/api/salary`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)

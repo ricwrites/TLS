@@ -104,7 +104,7 @@ left: 240px;
 border: solid 2px #c00000;
 width: fit-content;
 display: grid;
-grid-template-columns: repeat(6,16%); 
+grid-template-columns: repeat(8,12.5%); 
 padding-left: 30px;
 }
 
@@ -114,7 +114,7 @@ top:480px;
 
 .CTbuttons {
 position: absolute;
-top: 500px;
+top: 570px;
 width: 100%;
 left: 240px;
 border: solid 2px #c00000;
@@ -127,7 +127,7 @@ grid-template-columns: repeat(7,14%);
 
 .classtab {
 position: absolute;
-top:600px;
+top:750px;
 left: 240px;
 width: 1000px;
 }
@@ -137,3 +137,115 @@ background: lightgreen;
 }
 
 
+
+/* -------------------------------------------- */
+/* MOBILE FIX: ORDERED LIKE A PROPER DROID ARMY */
+/* -------------------------------------------- */
+@media (max-width: 600px) {
+
+  /* Remove absolute positioning – restore natural stacking order */
+  .subbuttons,
+  .CTbuttons,
+  .classtab,
+  .navga {
+    position: static !important;
+    width: 100% !important;
+    margin: 15px 0 !important;
+  }
+
+  /* First row of subject buttons */
+  .subbuttons {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  /* CT buttons come BELOW subbuttons, as requested */
+  .CTbuttons {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  /* Sidebar navigation becomes tidy */
+  .navga {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  /* Titles centered */
+  .pagetitle,
+  .pagesubtitle {
+    position: static !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    display: block !important;
+  }
+
+  .pagetitle {
+    font-size: 28px !important;
+  }
+
+  .pagesubtitle {
+    font-size: 20px !important;
+  }
+
+  /* Responsive table for student names */
+  .classtab {
+    margin-top: 20px !important;
+  }
+
+  table {
+    width: 100% !important;
+    font-size: 12px !important;
+  }
+
+  td, th {
+    padding: 4px !important;
+  }
+
+  /* No horizontal scrolling */
+  body {
+    overflow-x: hidden !important;
+  }
+}
+
+
+.subbuttons3up {
+position: absolute;
+top: 240px;
+width: 100%;
+left: 240px;
+border: solid 2px #c00000;
+width: fit-content;
+display: grid;
+grid-template-columns: repeat(8,12.5%); 
+padding-left: 30px;
+height: 30px;
+}
+
+.CTbuttons3up {
+position: absolute;
+top: 570px;
+width: 100%;
+left: 240px;
+border: solid 2px #c00000;
+width: fit-content;
+display: grid;
+grid-template-columns: repeat(7,14%);
+
+
+}
+
+
+.classtab3up {
+position: absolute;
+top:750px;
+left: 240px;
+width: 1000px;
+}

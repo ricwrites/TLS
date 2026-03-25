@@ -165,27 +165,8 @@ yearSelect.addEventListener('change', () => {
 
 function submitData() {
   const className = document.getElementById('className')?.value.trim() || 'UnknownClass';
-  const year = document.getElementById('yearSelect').value;  // from dropdown
+  const year = document.getElementById('yearSelect').value;
   const term = document.getElementById('termSelect').value;
-
-
-  const inputs = document.querySelectorAll('input[data-student]');
-  const data = {};
-
-  inputs.forEach(input => {
-    const student = input.dataset.student;
-    const subject = input.dataset.subject;
-    const value = input.value || null;
-
-    if (!data[student]) data[student] = {};
-    data[student][subject] = value;
-  });
-
- function submitData() {
-  const className = document.getElementById('className')?.value.trim() || 'UnknownClass';
-  const year = document.getElementById('yearSelect').value;  // from dropdown
-  const term = document.getElementById('termSelect').value;
-
 
   const inputs = document.querySelectorAll('input[data-student]');
   const data = {};
@@ -206,12 +187,10 @@ function submitData() {
     marks: data
   };
 
-
-
-fetch(`${API_BASE}/submit`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
+  fetch(`${API_BASE}/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   })
   .then(res => res.json())
   .then(resp => {
@@ -223,7 +202,8 @@ fetch(`${API_BASE}/submit`, {
     alert("Failed to submit data. Check console for errors.");
   });
 }
+</script>
 
-  </script>
+ 
 </body>
 </html>

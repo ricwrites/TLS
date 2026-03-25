@@ -14,7 +14,8 @@
   "license": "ISC",
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.1",
-    "vite": "^7.1.12"
+    "vite": "^7.1.12",
+    "vite-plugin-singlefile": "^2.3.2"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

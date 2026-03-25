@@ -43,24 +43,17 @@ const parseJSONSafe = (val, fallback) => {
 
  /* ================= FETCH ISSUES ================= */
 useEffect(() => {
-  if (!selectedIssueId) return;
-
-  fetch(`${API_BASE}/api/newsletter/${selectedIssueId}`)
+  fetch("${API_BASE}/api/newsletter/issues")
     .then(res => res.json())
-    .then(issue => {
-      const normalized = {
+    .then(data => {
+      const normalized = data.map(issue => ({
         ...issue,
-        layout: parseJSONSafe(issue.layout, []),
-        items: parseJSONSafe(issue.items, {}),
-        theme: parseJSONSafe(issue.theme, { primary: "#2c3e50", secondary: "#f4f4f4", accent: "#f39c12" }),
-        headerStyle: parseJSONSafe(issue.headerStyle, { bold: true, italic: false, fontFamily: "Georgia", fontSize: 32, color: "#ffffff" }),
-      };
-
-      // update issues so preview works
-      setIssues(prev => prev.map(i => i.id === normalized.id ? normalized : i));
+        id: issue.id || issue._id   // 🔥 key fix
+      }));
+      setIssues(normalized);
     })
     .catch(err => console.error(err));
-}, [selectedIssueId]);
+}, []);
 
 // Edit Issues!
 
@@ -70,23 +63,17 @@ useEffect(() => {
   fetch(`${API_BASE}/api/newsletter/${selectedIssueId}`)
     .then(res => res.json())
     .then(issue => {
-      const parseJSONSafe = (val, fallback) => {
-        if (!val) return fallback;
-        if (typeof val === "object") return val;
-        try { return JSON.parse(val); } catch { return fallback; }
-      };
+  const normalized = {
+    ...issue,
+    id: issue.id || issue._id,   // 🔥 ADD THIS
+    layout: parseJSONSafe(issue.layout, []),
+    items: parseJSONSafe(issue.items, {}),
+    theme: parseJSONSafe(issue.theme, { primary: "#2c3e50", secondary: "#f4f4f4", accent: "#f39c12" }),
+    headerStyle: parseJSONSafe(issue.headerStyle, { bold: true, italic: false, fontFamily: "Georgia", fontSize: 32, color: "#ffffff" }),
+  };
 
-      const normalized = {
-        ...issue,
-        layout: parseJSONSafe(issue.layout, []),
-        items: parseJSONSafe(issue.items, {}),
-        theme: parseJSONSafe(issue.theme, { primary: "#2c3e50", secondary: "#f4f4f4", accent: "#f39c12" }),
-        headerStyle: parseJSONSafe(issue.headerStyle, { bold: true, italic: false, fontFamily: "Georgia", fontSize: 32, color: "#ffffff" }),
-      };
-
-      // Update the issue in state so preview works
-      setIssues(prev => prev.map(i => i.id === normalized.id ? normalized : i));
-    })
+  setIssues(prev => prev.map(i => i.id === normalized.id ? normalized : i));
+})
     .catch(err => console.error(err));
 }, [selectedIssueId]);
   const updateIssue = (updatedIssue) => setIssues(prev => prev.map(i => i.id === updatedIssue.id ? updatedIssue : i));
@@ -95,7 +82,7 @@ useEffect(() => {
 
 
   const createIssue = async () => {
-    const res = await fetch(`${API_BASE}/api/newsletter/issues`, {
+    const res = await fetch("${API_BASE}/api/newsletter/issues", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newIssue)
     });
     const created = await res.json();
@@ -360,7 +347,7 @@ useEffect(() => {
               padding: row.style?.padding,
               border: row.style?.border,
               borderRadius: row.style?.borderRadius,
-              backgroundColor: row.style?.backgroundColor || selectedIssue.theme.secondary
+              backgroundColor: row.style?.backgroundColor
             }}>
               {row.columns.map(col => (
                 <Droppable key={col.id} droppableId={col.id}>
@@ -373,12 +360,7 @@ useEffect(() => {
                       borderRadius: col.style?.borderRadius,
                       backgroundColor: col.style?.backgroundColor
                     }}>
-<button
-  onClick={() => addItem(col.id)}
-  style={{ backgroundColor: selectedIssue.theme.accent, color: "#fff", border: "none", padding: "5px 10px", borderRadius: "5px" }}
->
-  + Add Here
-</button>
+                      <button onClick={()=>addItem(col.id)}>+ Add Here</button>
                       {col.items.map((itemId,index)=>{
                         const item = selectedIssue.items[itemId];
                         return (

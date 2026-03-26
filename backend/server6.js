@@ -557,7 +557,7 @@ app.post("/api/events/:id/notes", async (req, res) => {
   }
 });
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/api/events", async (req, res) => {
   try {

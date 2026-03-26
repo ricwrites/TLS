@@ -13,7 +13,7 @@ export const AdminCalendar = () => {
   });
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/admin/calendar/${year}`)
+    fetch(`/api/calendar/${year}`)
       .then(res => res.json())
       .then(data => setItems(data))
       .catch(err => console.error(err));
@@ -26,7 +26,7 @@ export const AdminCalendar = () => {
     // Ensure category is always defined
     const itemToSend = { ...newItem, category: newItem.category || "event" };
 
-    const res = await fetch(`${API_BASE}/api/admin/calendar`, {
+    const res = await fetch(`/api/calendar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(itemToSend)
@@ -47,12 +47,12 @@ export const AdminCalendar = () => {
   }; // <- close handleAddItem properly
 
   const handleDelete = async (id) => {
-    await fetch(`${API_BASE}/api/admin/calendar/${id}`, { method: "DELETE" });
+    await fetch(`/api/calendar/${id}`, { method: "DELETE" });
     setItems(items.filter(i => i.id !== id));
   };
 
   const togglePublish = async (id) => {
-    const res = await fetch(`${API_BASE}/api/admin/calendar/${id}/publish`, { method: "PUT" });
+    const res = await fetch(`/api/calendar/${id}/publish`, { method: "PUT" });
     const updated = await res.json();
     setItems(items.map(i => i.id === id ? updated : i));
   };

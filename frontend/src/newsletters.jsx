@@ -43,7 +43,7 @@ const parseJSONSafe = (val, fallback) => {
 
  /* ================= FETCH ISSUES ================= */
 useEffect(() => {
-  fetch("${API_BASE}/api/newsletter/issues")
+  fetch(`/api/newsletter/issues`)
     .then(res => res.json())
     .then(data => {
       const normalized = data.map(issue => ({
@@ -117,7 +117,7 @@ useEffect(() => {
   const deleteIssue = async () => {
     if (!selectedIssue || !window.confirm("Delete this issue permanently?")) return;
     setIssues(prev => prev.filter(i => i.id !== selectedIssue.id));
-    await fetch(`${API_BASE}/api/newsletter/${selectedIssue.id}`, { method: "DELETE" });
+    await fetch(`/api/newsletter/${selectedIssue.id}`, { method: "DELETE" });
     setSelectedIssueId(null);
   };
 
@@ -195,7 +195,7 @@ useEffect(() => {
             </button>
             <button onClick={async () => {
               if (!window.confirm("Delete this issue permanently?")) return;
-              await fetch(`${API_BASE}/api/newsletter/${issue.id}`, { method: "DELETE" });
+              await fetch(`/api/newsletter/${issue.id}`, { method: "DELETE" });
               setIssues(prev => prev.filter(i => i.id !== issue.id));
             }}>Delete</button>
           </div>

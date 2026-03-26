@@ -182,7 +182,7 @@ export function StudentDetails() {
 
   // Fetch all classes
   useEffect(() => {
-    fetch('http://localhost:4040/api/classes')
+    fetch('/api/classes')
       .then(res => res.json())
       .then(data => setClasses(data))
       .catch(err => console.error('Error fetching classes:', err));
@@ -249,13 +249,13 @@ export function StudentDetails() {
 
       let res;
       if (activeStudent?.id) {
-        res = await fetch(`http://localhost:4040/api/students/${activeStudent.id}`, {
+        res = await fetch(`/api/students/${activeStudent.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bodyData)
         });
       } else {
-        res = await fetch(`${API_BASE}/api/students`, {
+        res = await fetch(`/api/students`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bodyData)

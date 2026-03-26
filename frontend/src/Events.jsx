@@ -14,7 +14,7 @@ export function EventSubmission() {
   const [noteForm, setNoteForm] = useState({ eventId: "", text: "" });
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/events`)
+    fetch(`/api/events`)
       .then(r => r.json())
       .then(setEvents);
   }, []);
@@ -27,7 +27,7 @@ export function EventSubmission() {
     form.images.forEach(img => data.append("images", img));
 
     try {
-      const res = await fetch(`${API_BASE}/api/events`, {
+      const res = await fetch(`/api/events`, {
         method: "POST",
         body: data
       });
@@ -44,7 +44,7 @@ export function EventSubmission() {
     if (!noteForm.eventId || !noteForm.text) return;
 
     const res = await fetch(
-      `${API_BASE}/api/events/${noteForm.eventId}/notes`,
+      `/api/events/${noteForm.eventId}/notes`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -141,7 +141,7 @@ export function EventSubmission() {
         if (!window.confirm("Are you sure?")) return;
 
         const res = await fetch(
-          `${API_BASE}/api/events/${ev.id}`,
+          `/api/events/${ev.id}`,
           { method: "DELETE" }
         );
 

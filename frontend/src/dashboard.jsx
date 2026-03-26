@@ -65,7 +65,7 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   const exportReportCards = async () => {
     try {
-      const res = await fetch("http://localhost:4040/api/classes");
+      const res = await fetch("/api/classes");
       const classes = await res.json();
 
       if (!classes.length) return alert("No class data available");
@@ -104,14 +104,14 @@ export const AdDashboard = ({ currentUser }) => {
   // -------------------------
   const exportStudentPayments = async () => {
     try {
-      const res = await fetch("http://localhost:4040/api/classes");
+      const res = await fetch("/api/classes");
       const classes = await res.json();
 
       let allPayments = [];
 
       for (const cls of classes) {
         const studentRes = await fetch(
-          `http://localhost:4040/api/students/${cls.className}?year=${cls.year}&term=${cls.term}`
+          `/api/students/${cls.className}?year=${cls.year}&term=${cls.term}`
         );
         const students = await studentRes.json();
 
@@ -160,7 +160,7 @@ export const AdDashboard = ({ currentUser }) => {
 
   const exportMiscExpenses = async () => {
     try {
-      const res = await fetch("http://localhost:4040/api/misc-expenses");
+      const res = await fetch("/api/misc-expenses");
       const expenses = await res.json();
 
       if (!Array.isArray(expenses) || !expenses.length) {

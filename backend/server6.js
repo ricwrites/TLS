@@ -39,7 +39,8 @@ app.use(cors({
     "https://learningsanctuarytura.onrender.com",
     "https://tls-server.com",
     "http://localhost:5173",
-    "http://localhost:5174"
+    "http://localhost:5174",
+    "https://tlsweb.onrender.com"
   ],
   methods: ["GET", "POST","PATCH","PUT", "DELETE"]
 }));

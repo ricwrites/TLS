@@ -40,9 +40,10 @@ app.use(cors({
     "https://tls-server.com",
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://tlsweb.onrender.com"
+    "https://tlsweb.onrender.com",
   ],
-  methods: ["GET", "POST","PATCH","PUT", "DELETE"]
+  methods: ["GET", "POST","PATCH","PUT", "DELETE"],
+  credentials: true
 }));
 
 app.use(bodyParser.json());

@@ -158,7 +158,7 @@ export function EventSubmission() {
         {ev.images.map((url, i) => (
           <img
             key={i}
-            src={`/api${url}`}
+            src={`https://learningsanctuaryt.onrender.com/api/${url}`}
             alt={ev.title}
             width="150"
           />

@@ -1272,7 +1272,7 @@ app.get("/api/calendar/years", async (req, res) => {
 });
 
 // POST a new event (no images required)
-app.post("/api/admin/calendar", async (req, res) => {
+app.post("/api/calendar", async (req, res) => {
   const { title, description, date, type, published, category } = req.body;
 
   if (!title || !date) {

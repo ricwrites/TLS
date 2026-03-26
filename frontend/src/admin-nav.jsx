@@ -65,7 +65,7 @@ navigate("/studentdetails")
 };
 
 const goToLogin = () => {
-  window.location.href = '/';
+  window.location.href = 'https://tlsweb.onrender.com';
 };
 
 const goToCertificates = () => {

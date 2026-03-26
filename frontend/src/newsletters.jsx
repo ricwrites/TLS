@@ -60,7 +60,7 @@ useEffect(() => {
   useEffect(() => {
   if (!selectedIssueId) return;
 
-  fetch(`${API_BASE}/api/newsletter/${selectedIssueId}`)
+  fetch(`/api/newsletter/${selectedIssueId}`)
     .then(res => res.json())
     .then(issue => {
   const normalized = {
@@ -82,7 +82,7 @@ useEffect(() => {
 
 
   const createIssue = async () => {
-    const res = await fetch("${API_BASE}/api/newsletter/issues", {
+    const res = await fetch(`/api/newsletter/issues`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newIssue)
     });
     const created = await res.json();
@@ -100,7 +100,7 @@ useEffect(() => {
       theme: JSON.stringify(selectedIssue.theme),
       headerStyle: JSON.stringify(selectedIssue.headerStyle),
     };
-    const res = await fetch(`${API_BASE}/api/newsletter/${selectedIssue.id}`, {
+    const res = await fetch(`/api/newsletter/${selectedIssue.id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
     });
     res.ok ? alert("Saved!") : alert("Failed to save");
@@ -108,7 +108,7 @@ useEffect(() => {
 
   const publishIssue = async () => {
     if (!selectedIssue || selectedIssue.published) return alert("Already published");
-    const res = await fetch(`${API_BASE}/api/newsletter/${selectedIssue.id}/publish`, { method: "POST" });
+    const res = await fetch(`/api/newsletter/${selectedIssue.id}/publish`, { method: "POST" });
     if (!res.ok) return alert("Failed to publish");
     updateIssue({ ...selectedIssue, published: true });
     alert("Issue published!");

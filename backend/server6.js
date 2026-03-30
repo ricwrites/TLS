@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from "multer";
+import cloudinary from "./cloudinary.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -488,15 +489,25 @@ app.post("/api/events", upload.array("images"), async (req, res) => {
   const { title, description, date } = req.body;
 
   try {
-    const imagePaths = req.files.map(f => `/uploads/${f.filename}`);
+    // Upload ALL images to Cloudinary
+    const uploadPromises = req.files.map(file =>
+      cloudinary.uploader.upload(file.path, {
+        folder: "events"
+      })
+    );
+
+    const results = await Promise.all(uploadPromises);
+
+    // Extract URLs
+    const imageUrls = results.map(r => r.secure_url);
 
     await pool.query(
       `INSERT INTO events (title, description, date, images, type, published)
-VALUES ($1,$2,$3,$4,'event',true)`,
-      [title, description, date, imagePaths]
+       VALUES ($1,$2,$3,$4,'event',true)`,
+      [title, description, date, imageUrls]
     );
 
-    // Return FULL updated list (because your React expects full array)
+    // Return updated events (same as your existing logic)
     const eventsResult = await pool.query(`
       SELECT * FROM events ORDER BY date DESC
     `);
@@ -929,60 +940,6 @@ app.get("/api/newsletter/issues", async (req, res) => {
   }
 });
 
-app.post(
-  "/api/newsletter/:issueId/items",
-  upload.array("images"), // <-- IMPORTANT
-  async (req, res) => {
-    const { issueId } = req.params;
-    const { type, title, content, author, role } = req.body;
-
-    try {
-      const imagePaths = req.files?.map(f => `/uploads/${f.filename}`) || [];
-
-      const result = await pool.query(
-        `INSERT INTO newsletter_items
-         (issue_id, type, title, content, author, role, images)
-         VALUES ($1,$2,$3,$4,$5,$6,$7)
-         RETURNING *`,
-        [issueId, type, title, content, author, role, imagePaths]
-      );
-
-      res.status(201).json(result.rows[0]);
-    } catch (err) {
-      console.error("Insert newsletter item error:", err);
-      res.status(500).json({ error: "Insert failed" });
-    }
-  }
-);
-
-app.post("/api/newsletter/issues", async (req, res) => {
-  const { month, year } = req.body;
-
-  try {
-    const result = await pool.query(
-      `INSERT INTO newsletter_issues (month, year)
-       VALUES ($1,$2)
-       RETURNING *`,
-      [month, year]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error("Create issue error:", err);
-    res.status(500).json({ error: "Insert failed" });
-  }
-});
-
-function safeParse(json, fallback) {
-  if (!json) return fallback;
-  try {
-    return JSON.parse(json);
-  } catch (err) {
-    console.warn("Failed to parse JSON, using fallback:", json);
-    return fallback;
-  }
-}
-
 app.get("/api/newsletter/published", async (req, res) => {
   try {
     const result = await pool.query(
@@ -1042,6 +999,34 @@ app.get("/api/newsletter/published", async (req, res) => {
     res.status(500).json({ error: "Database fetch failed" });
   }
 });
+
+app.post("/api/newsletter/issues", async (req, res) => {
+  const { month, year } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO newsletter_issues (month, year)
+       VALUES ($1,$2)
+       RETURNING *`,
+      [month, year]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Create issue error:", err);
+    res.status(500).json({ error: "Insert failed" });
+  }
+});
+
+function safeParse(json, fallback) {
+  if (!json) return fallback;
+  try {
+    return JSON.parse(json);
+  } catch (err) {
+    console.warn("Failed to parse JSON, using fallback:", json);
+    return fallback;
+  }
+}
 
 
 app.get("/api/newsletter/:issueId", async (req, res) => {
@@ -1188,6 +1173,49 @@ async function publishIssueHandler(req, res) {
     res.status(500).json({ error: "Publish failed" });
   }
 }
+
+app.post(
+  "/api/newsletter/:issueId/items",
+  upload.array("images"),
+  async (req, res) => {
+    const { issueId } = req.params;
+    const { type, title, content, author, role } = req.body;
+
+    try {
+      let imageUrls = [];
+
+      if (req.files && req.files.length > 0) {
+        const uploads = await Promise.all(
+          req.files.map(file =>
+            cloudinary.uploader.upload(file.path, {
+              folder: "newsletter"
+            })
+          )
+        );
+
+        imageUrls = uploads.map(r => r.secure_url);
+
+        // cleanup
+        req.files.forEach(file => fs.unlinkSync(file.path));
+      }
+
+      const result = await pool.query(
+        `INSERT INTO newsletter_items
+         (issue_id, type, title, content, author, role, images)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)
+         RETURNING *`,
+        [issueId, type, title, content, author, role, imageUrls]
+      );
+
+      res.status(201).json(result.rows[0]);
+
+    } catch (err) {
+      console.error("Insert newsletter item error:", err);
+      res.status(500).json({ error: "Insert failed" });
+    }
+  }
+);
+
 
 // 👇 PUT + POST (place directly under the function)
 app.put("/api/newsletter/:issueId/publish", publishIssueHandler);

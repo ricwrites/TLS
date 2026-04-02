@@ -44,51 +44,91 @@ const parseJSONSafe = (val, fallback) => {
  /* ================= FETCH ISSUES ================= */
 useEffect(() => {
   fetch(`/api/newsletter/issues`)
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
     .then(data => {
+      if (!Array.isArray(data)) {
+        console.error("Expected array, got:", data);
+        setIssues([]); // ✅ prevents crash
+        return;
+      }
+
       const normalized = data.map(issue => ({
         ...issue,
-        id: issue.id || issue._id   // 🔥 key fix
+        id: issue.id || issue._id
       }));
+
       setIssues(normalized);
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+      console.error("Fetch issues failed:", err);
+      setIssues([]); // ✅ safe fallback
+    });
 }, []);
 
 // Edit Issues!
 
-  useEffect(() => {
+useEffect(() => {
   if (!selectedIssueId) return;
 
   fetch(`/api/newsletter/${selectedIssueId}`)
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
     .then(issue => {
-  const normalized = {
-    ...issue,
-    id: issue.id || issue._id,   // 🔥 ADD THIS
-    layout: parseJSONSafe(issue.layout, []),
-    items: parseJSONSafe(issue.items, {}),
-    theme: parseJSONSafe(issue.theme, { primary: "#2c3e50", secondary: "#f4f4f4", accent: "#f39c12" }),
-    headerStyle: parseJSONSafe(issue.headerStyle, { bold: true, italic: false, fontFamily: "Georgia", fontSize: 32, color: "#ffffff" }),
-  };
+      if (!issue || typeof issue !== "object") {
+        console.error("Invalid issue response:", issue);
+        return;
+      }
 
-  setIssues(prev => prev.map(i => i.id === normalized.id ? normalized : i));
-})
-    .catch(err => console.error(err));
+      const normalized = {
+        ...issue,
+        id: issue.id || issue._id,
+        layout: parseJSONSafe(issue.layout, []),
+        items: parseJSONSafe(issue.items, {}),
+        theme: parseJSONSafe(issue.theme, {
+          primary: "#2c3e50",
+          secondary: "#f4f4f4",
+          accent: "#f39c12"
+        }),
+        headerStyle: parseJSONSafe(issue.headerStyle, {
+          bold: true,
+          italic: false,
+          fontFamily: "Georgia",
+          fontSize: 32,
+          color: "#ffffff"
+        }),
+      };
+
+      setIssues(prev =>
+        prev.map(i => i.id === normalized.id ? normalized : i)
+      );
+    })
+    .catch(err => console.error("Fetch issue failed:", err));
 }, [selectedIssueId]);
-  const updateIssue = (updatedIssue) => setIssues(prev => prev.map(i => i.id === updatedIssue.id ? updatedIssue : i));
-
   /* ========================= ISSUE ACTIONS ========================= */
 
 
   const createIssue = async () => {
-    const res = await fetch(`/api/newsletter/issues`, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newIssue)
-    });
-    const created = await res.json();
-    setIssues(prev => [...prev, created]);
-    setSelectedIssueId(created.id);
+  const res = await fetch(`/api/newsletter/issues`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newIssue)
+  });
+
+  const created = await res.json();
+
+  const normalized = {
+    ...created,
+    id: created.id || created._id
   };
+
+  setIssues(prev => [...prev, normalized]);
+  setSelectedIssueId(normalized.id);
+};
 
   const saveIssue = async () => {
     if (!selectedIssue) return;
@@ -362,7 +402,8 @@ useEffect(() => {
                     }}>
                       <button onClick={()=>addItem(col.id)}>+ Add Here</button>
                       {col.items.map((itemId,index)=>{
-                        const item = selectedIssue.items[itemId];
+                        const item = selectedIssue.items?.[itemId];
+if (!item) return null;
                         return (
                           <Draggable key={itemId} draggableId={itemId} index={index}>
                             {(provided)=>(

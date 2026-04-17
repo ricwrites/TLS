@@ -490,13 +490,17 @@ app.post("/api/events", upload.array("images"), async (req, res) => {
 
   try {
     // Upload ALL images to Cloudinary
-    const uploadPromises = req.files.map(file =>
-      cloudinary.uploader.upload(file.path, {
-        folder: "events"
-      })
-    );
+    const files = req.files || [];
 
-    const results = await Promise.all(uploadPromises);
+const uploadPromises = files.map(file =>
+  cloudinary.uploader.upload(file.path, {
+    folder: "events"
+  })
+);
+const results = await Promise.all(uploadPromises);
+
+// cleanup temp files
+files.forEach(file => fs.unlinkSync(file.path));
 
     // Extract URLs
     const imageUrls = results.map(r => r.secure_url);

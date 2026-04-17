@@ -14,31 +14,49 @@ export function EventSubmission() {
   const [noteForm, setNoteForm] = useState({ eventId: "", text: "" });
 
   useEffect(() => {
-    fetch(`/api/events`)
-      .then(r => r.json())
-      .then(setEvents);
-  }, []);
+  fetch(`/api/events`)
+    .then(r => r.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        setEvents(data);
+      } else {
+        console.error("Invalid events response:", data);
+        setEvents([]); // prevent crash
+      }
+    })
+    .catch(err => {
+      console.error("Fetch failed:", err);
+      setEvents([]);
+    });
+}, []);
 
   const handleSubmitEvent = async () => {
-    const data = new FormData();
-    data.append("title", form.title);
-    data.append("description", form.description);
-    data.append("date", form.date);
-    form.images.forEach(img => data.append("images", img));
+  const data = new FormData();
+  data.append("title", form.title);
+  data.append("description", form.description);
+  data.append("date", form.date);
+  form.images.forEach(img => data.append("images", img));
 
-    try {
-      const res = await fetch(`/api/events`, {
-        method: "POST",
-        body: data
-      });
-      const saved = await res.json();
+  try {
+    const res = await fetch(`/api/events`, {
+      method: "POST",
+      body: data
+    });
+    const saved = await res.json();
+
+    if (Array.isArray(saved)) {
       setEvents(saved);
       setForm({ title: "", description: "", date: "", images: [] });
       setMessage("Event submitted successfully!");
-    } catch {
-      setMessage("Submission failed. Try again.");
+    } else {
+      console.error("Invalid response:", saved);
+      setMessage("Server error while saving event");
     }
-  };
+  } catch (err) {
+    console.error("Submit failed:", err);
+    setMessage("Submission failed. Try again.");
+  }
+};
 
   const handleSubmitNote = async () => {
     if (!noteForm.eventId || !noteForm.text) return;
@@ -146,7 +164,12 @@ export function EventSubmission() {
         );
 
         const updated = await res.json();
-        setEvents(updated);
+
+if (Array.isArray(updated)) {
+  setEvents(updated);
+} else {
+  console.error("Delete failed:", updated);
+}
       }}
       style={{ background: "red", color: "white", marginBottom: 10 }}
     >

@@ -25,11 +25,12 @@
 <div class = "login"><a class ="navlink" href ="Class6.html">Class 6</a></div>
 <div class = "login"><a class ="navlink" href ="Class7.html">Class 7</a></div>
 <div class = "login"><a class ="navlink">Class 8</a></div>
+<div class = "login"><a class ="navlink" href ="Class9.html">Class 9</a></div>
 <div class = "login"><a class = "navlink" href ="home.html">Home</a></div>
 </div>
   
   
-  <div class= "subbuttons3up" id="subjects">
+  <div class= "subbuttons3up"id="subjects">
     <button onclick="toggleSubject('Literature Int', this)">English Literature Int</button>
     <button onclick="toggleSubject('Literature Ext', this)">English Literature Ext</button>
     <button onclick="toggleSubject('EngReading', this)">English Reading</button>
@@ -71,7 +72,6 @@
     <button onclick="toggleSubject('Responsibility', this)">Responsibility</button>
     <button onclick="toggleSubject('Comments', this)">Comments</button>
   </div>
-
   <input type="hidden" id="className" value="11. Class 8">
   <form class = "classtab3up" id="classForm">
     <table id="classTable">
@@ -83,30 +83,27 @@
       </thead>
       <tbody id="studentRows"></tbody>
     </table>
-
 <label for="yearSelect">Select Year: </label>
 <select id="yearSelect">
-  <option value="2025" selected>2025</option>
-  <option value="2026">2026</option>
+  <option value="2025">2025</option>
+  <option value="2026" selected>2026</option>
   <option value="2027">2027</option>
 </select>
 
 
 <label for="termSelect">Select Term: </label>
 <select id="termSelect">
-  <option value="1">Term 1</option>
-  <option value="2" selected>Term 2</option>
+  <option value="1" selected>Term 1</option>
+  <option value="2">Term 2</option>
 </select>
-
     <button type="button" onclick="submitData()">Submit</button>
   </form>
 
 <script src="config.js"></script>
   <script>
-    const students = ["Abrio Chingchau K. Sangma","Achazia Manasa M. Marak","Adru R. Marak","Akimchu A. Sangma","Akkresa Ch. Momin","Alex Cherik Momin","Alyn Mrong Marak","Amade Silgra R. Marak","Ammariya R. Marak","Areyo T. Sangma","Arpita Saha","Aryaveer Hajong","Ayami Miyoko K. Marak","Bejian Kagimche A. Sangma","Bhaisnavi Chetry","Bravio R. Marak","Caelyn Adara A. Sangma","Chrysa Avangi D. Sangma","Chuame Likkimsa R. Marak","Dachiammasa B. Sangma","Dedo R. Marak","Deosa R. Marak","Diksha Borgohain","Ebrya S. Sangma","Emichima A. Sangma","Eric Salgimra A. Sangma","Evangeline M. Sangma","Hapyansa Ch. Sangma","Immanuel Akangrik M. Sangma","Jedie R. Marak","Logos R. Marak","Manya Agarwala","Nitoesa Rikande S. Marak","Priyam Sah","Rado Amgra Ch. Marak","Reshav Modak","Rhyan D. Sangma","Rohan Das","Shivanshu Shah","Sudipto Nath","Supiya Rani G. Sangma","Susongrik M. Marak"];
+    const students = ["Achurao Salgado R. Marak","Adarsh Hajong","Aden Tengrik Ch. Marak","Adonia Onasa M. Marak","Aksram G. Sangma","Ama Liu Ch. Marak","Amara Silasa M. Marak","Amaziah Paz Ch. Momin","Amku Absalom D. Marak","Anatisa Mikindik Ch. Marak","Ariana R. Momin","Arnaby Niyasha G. Momin","Avinoam Breindel R. Marak","Bian Cheasa K. Sangma","Bochim R. Sangma","Cheaba Dedora Ch. Marak","Cheangsa Ch. Marak","Chuesa G. Sangma","Dawn Fairy M. Sangma","Daxton Rera M. Sangma","Dishank Bose","Eondo Rio C. Sangma","Eve I. Momin","Faith M. Sangma","Glorya D. Sangma","Hezekiah Akangra R. Sangma","Hushai Chada Marak","Jimesa Deatchi Ch. Momin","Ka’pa’ang S. Sangma","Kambeona K. Sangma","Kanvar Agarwala","Manasha R. Sangma","Nitoesa R. Marak","Patitaia M. Sangma","Pranshu Mishra","Shaily Mishra","Shayon Naha","Smayan Hajong","Swati Prasad","Taara Kasri K. Sangma","Theophilus M. Sangma","Urbi Gosh","Veeneet Das","Yinz Eifreda N. Sangma"];
 
-    const rollNos = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42]
-;
+    const rollNos = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44];
     const table = document.getElementById('classTable');
     const studentRows = document.getElementById('studentRows');
 

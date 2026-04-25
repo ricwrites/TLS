@@ -27,6 +27,16 @@ useEffect(() => {
   setSelectedClass('');
 }, [selectedYear, selectedTerm]);
 
+const filteredClasses = classes.filter(c =>
+  (!selectedYear || c.year === selectedYear) &&
+  (!selectedTerm || c.term === selectedTerm)
+);
+
+// ✅ Remove duplicates (same className)
+const uniqueClasses = [
+  ...new Map(filteredClasses.map(c => [c.className, c])).values()
+];
+
   const currentClass = classes.find(
     c => c.className === selectedClass && c.year === selectedYear && c.term === selectedTerm
   );
@@ -40,15 +50,7 @@ useEffect(() => {
     const studentMarks = currentClass.marks || {};
 
 // ✅ Filter classes by selected year + term
-const filteredClasses = classes.filter(c =>
-  (!selectedYear || c.year === selectedYear) &&
-  (!selectedTerm || c.term === selectedTerm)
-);
 
-// ✅ Remove duplicates (same className)
-const uniqueClasses = [
-  ...new Map(filteredClasses.map(c => [c.className, c])).values()
-];
 
     const subjects =
       Object.keys(studentMarks).length > 0

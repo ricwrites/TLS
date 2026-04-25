@@ -20,6 +20,14 @@ export function NewsletterAdmin() {
   const [editingRowId, setEditingRowId] = useState(null);
   const [editingColId, setEditingColId] = useState(null);
 
+const updateIssue = (updatedIssue) => {
+  setIssues(prev =>
+    prev.map(issue =>
+      issue.id === updatedIssue.id ? updatedIssue : issue
+    )
+  );
+};
+
 // Add this above the component body
 const parseJSONSafe = (val, fallback) => {
   if (!val) return fallback;

@@ -23,6 +23,10 @@ export const ReportCards = () => {
       .catch(err => console.error('Error fetching classes:', err));
   }, []);
 
+useEffect(() => {
+  setSelectedClass('');
+}, [selectedYear, selectedTerm]);
+
   const currentClass = classes.find(
     c => c.className === selectedClass && c.year === selectedYear && c.term === selectedTerm
   );
@@ -34,6 +38,18 @@ export const ReportCards = () => {
     if (!currentClass) return;
 
     const studentMarks = currentClass.marks || {};
+
+// ✅ Filter classes by selected year + term
+const filteredClasses = classes.filter(c =>
+  (!selectedYear || c.year === selectedYear) &&
+  (!selectedTerm || c.term === selectedTerm)
+);
+
+// ✅ Remove duplicates (same className)
+const uniqueClasses = [
+  ...new Map(filteredClasses.map(c => [c.className, c])).values()
+];
+
     const subjects =
       Object.keys(studentMarks).length > 0
         ? Object.keys(studentMarks[Object.keys(studentMarks)[0]] || {})
@@ -93,17 +109,21 @@ export const ReportCards = () => {
 
       <p>
         Select class:{' '}
-        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-          <option value="">-- Select a class --</option>
-          {[...classes]
-  .sort((a, b) => parseInt(a.className.split('.')[0]) - parseInt(b.className.split('.')[0]))
-  .map(cls => (
-    <option key={cls.className + cls.year + cls.term} value={cls.className}>
-      {cls.className} ({Object.keys(cls.marks || {}).length} students)
-    </option>
+        <select
+  value={selectedClass}
+  onChange={e => setSelectedClass(e.target.value)}
+  disabled={!selectedYear} // optional but recommended
+>
+  <option value="">-- Select a class --</option>
 
-          ))}
-        </select>
+  {uniqueClasses
+    .sort((a, b) => parseInt(a.className.split('.')[0]) - parseInt(b.className.split('.')[0]))
+    .map(cls => (
+      <option key={cls.className} value={cls.className}>
+        {cls.className} ({Object.keys(cls.marks || {}).length} students)
+      </option>
+    ))}
+</select>
       </p>
 
       <p>
@@ -140,8 +160,10 @@ export const ReportCards = () => {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(currentClass.marks)
-  .sort(([a], [b]) => a.localeCompare(b))
+                {Object.entries(currentClass.marks || {})
+  .sort(([a], [b]) =>
+    a.localeCompare(b, undefined, { sensitivity: "base" })
+  )
   .map(([student, scores]) => (
                   <tr key={student}>
                     <td>{student}</td>
@@ -177,8 +199,8 @@ export function StudentDetails() {
     bloodType: ''
   });
 
-  const currentYear = "2025";
-  const currentTerm = "2";
+  const currentYear = "2026";
+  const currentTerm = "1";
 
   // Fetch all classes
   useEffect(() => {

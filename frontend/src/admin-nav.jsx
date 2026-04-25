@@ -65,7 +65,7 @@ navigate("/studentdetails")
 };
 
 const goToLogin = () => {
-  window.location.href = 'https://tlsweb.onrender.com';
+  window.location.href = 'https://thelearningsanctuary.quest';
 };
 
 const goToCertificates = () => {

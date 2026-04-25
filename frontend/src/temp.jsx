@@ -402,7 +402,7 @@ return <Payments />;
 export const ToRoot = () => {
   return (
     <div>
-      <button onClick={() => window.location.href = `https://tlsweb.onrender.com`}>
+      <button onClick={() => window.location.href = `https://thelearningsanctuary.quest`}>
         Back to Main Menu
       </button>
     </div>

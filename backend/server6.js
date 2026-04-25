@@ -42,6 +42,9 @@ app.use(cors({
     "http://localhost:5173",
     "http://localhost:5174",
     "https://tlsweb.onrender.com",
+    "https://thelearningsanctuary.quest",
+    "https://admin.thelearningsanctuary.quest",
+    "https://teachers.thelearningsanctuary.quest",
   ],
   methods: ["GET", "POST","PATCH","PUT", "DELETE"],
   credentials: true

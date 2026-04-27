@@ -1340,7 +1340,7 @@ app.post("/api/calendar", async (req, res) => {
 });
 
 // Optional: DELETE an event
-app.delete("/api/admin/calendar/:id", async (req, res) => {
+app.delete("/api/calendar/:id", async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query(`DELETE FROM events WHERE id=$1`, [id]);

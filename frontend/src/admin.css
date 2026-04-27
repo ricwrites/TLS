@@ -14,3 +14,10 @@ justify-content: space-between;
 button {
 border-radius: 30px;
 }
+
+.footer {
+position: absolute;
+top:1800px;
+margin-left:400px;
+font-size:10px;
+}

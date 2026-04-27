@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style id="qk3p2a">
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #root {
+    flex: 1; /* pushes footer down */
+  }
+
+  .footer {
+    text-align: center;
+    padding: 10px;
+  }
+</style>
+
   <meta charset="UTF-8">
  <title> Admin </title>
 
@@ -18,9 +39,7 @@
 <div id="root"></div>
 <script type= "module" src = "/src/admin.jsx"> </script>
 
-<footer>
-<p> © 2026 This website has been created and maintained by Richard Emmanuel Roy. All rights reserved. </p>
-</footer>
+<p class = "footer"> © 2026 This website has been created and maintained by Richard Emmanuel Roy. All rights reserved. </p>
 
 </body>
 

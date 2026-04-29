@@ -475,12 +475,14 @@ export const TransferCertificate = () => {
   const printTC = () => {
     // Fill hidden template
     document.getElementById("tc-student-name").innerText = form.studentName;
+    document.getElementById("tc-date").innerText = form.date;
     document.getElementById("tc-no").innerText = form.No;
     document.getElementById("tc-pen-no").innerText = form.PENNo;
     document.getElementById("tc-mother-name").innerText = form.motherName;
     document.getElementById("tc-class").innerText = form.className;
+    document.getElementById("tc-next-class").innerText = form.nextClassName;
     document.getElementById("tc-admission").innerText = form.admissionNo;
-    document.getElementById("tc-dob").innerText = form.dob;
+    document.getElementById("tc-dob").innerText = form.Dob;
     document.getElementById("tc-starting").innerText = form.startingDate;
     document.getElementById("tc-leaving").innerText = form.leavingDate;
     document.getElementById("tc-fees-date").innerText = form.feesDate;    
@@ -496,10 +498,17 @@ export const TransferCertificate = () => {
       Student's name: <input name="studentName" placeholder="Student Name" onChange={update} /> <br />
       Mother's name: <input name="motherName" placeholder="Mother's Name" onChange={update} /> <br />
       Class: <input name="className" placeholder="Class" onChange={update} /> <br />
-      Admission no: <input name="admissionNo" placeholder="Admission No" onChange={update} /> <br />
+      PEN no: <input name="PENNo" placeholder="PEN No" onChange={update} /> <br />
+      
       Date of Birth: <input name="dob" type="date" onChange={update} />  <br />
+      Starting date: <input name="startingDate" type="date" onChange={update} />  <br />
       Leaving date: <input name="leavingDate" type="date" onChange={update} />  <br />
-      Reason for leaving: <textarea name="reason" placeholder="Reason for Leaving" onChange={update} /> <br />
+      Reason for leaving: <textarea name="reason" placeholder="Reason for Leaving" onChange={update} />  <br />
+    Reasons: (i) Unavoidable change of residence <br />
+    (ii) Ill health <br />
+    (iii) Completion of the School Course <br />
+    (iv) Minor reasons <br />
+    (v) Other reasons <br />
 
       <button onClick={printTC}>Print TC</button>
     </div>

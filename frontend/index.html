@@ -27,6 +27,35 @@ body {
   display: flex; 
   justify-content: space-between; 
 }
+
+
+/* Hide on screen */
+.print-hidden {
+  display: none;
+}
+
+/* Show only when printing */
+@media print {
+  .print-hidden {
+    display: block;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #tc-template, #tc-template * {
+    visibility: visible;
+  }
+
+  #tc-template {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
 </style>
 
   <meta charset="UTF-8">
@@ -51,22 +80,23 @@ body {
 
     <h1><u>TRANSFER CERTIFICATE</u></h1>
    <div id = "tccontainer"> 
-    <span>PEN No.<u><b span id = "tc-pen-no"> </span> </b></u> </span>
-    <span>Date: <span id = "tc-date"> </span> </div>
+<span>PEN No. <u><b id="tc-pen-no"></b></u></span>
+<span>Date: <span id="tc-date"></span></span>
+    </div>
     <p>
-      This is to certify that <u><b id="tc-student-name"></b></u></span>,
-      daughter/son of Ms. <u><b id="tc-mother-name"></b></u></span>,
-      was a bonafide student of this school from <u><b id = "tc-starting-date"></b></u>to <u><b id = "tc-leaving-date"></b></u></span>.
+      This is to certify that <u><b id="tc-student-name"></b></u>,
+      daughter/son of Ms. <u><b id="tc-mother-name"></b></u>,
+      was a bonafide student of this school from <u><b id = "tc-starting-date"></b></u> to <u><b id = "tc-leaving-date"></b></u>.
     </p>
-    <p> Her/His date of birth according to the Admission Register is <u><b span id = "tc-dob"></b></u></span>.
-    <p> She/He was studying in Class <u><b span id = "tc-class"><b></u> </p> and has / has not been promoted to Class <u> <b span id = "tc-next-class"></b></u></span>. All school fees have been paid upto <u><b span id = "tc-fees-date"> </b> </u></span>.</p> <br>
+    <p> Her/His date of birth according to the Admission Register is <u><b id = "tc-dob"></b></u>.</p>
+    <p> She/He was studying in Class <u><b id = "tc-class"></b></u> and has / has not been promoted to Class <u> <b id = "tc-next-class"></b></u>. All school fees have been paid upto <u><b id = "tc-fees-date"> </b> </u>.</p> 
 
-    <p> Her/His conduct during her/his stay at school was <u><b span id = "tc-conduct"></b></u></span>.</p>
-    <br>
+    <p> Her/His conduct during her/his stay at school was <u><b id = "tc-conduct"></b></u>.</p>
+
 
     <p>
       Reason for Leaving:
-      <span id="tc-reason"></span>
+      <b id="tc-reason"></b>
     </p>
 
     <div class="signature-row">
@@ -74,9 +104,12 @@ body {
       <div>Headmaster</div>
     </div>
   </div>
-<script type= "module" src = "/src/admin.jsx"> </script>
+</div>
+
 
 <p class = "footer"> © 2026 This website has been created and maintained by Richard Emmanuel Roy. All rights reserved. </p>
+
+<script type= "module" src = "/src/admin.jsx"> </script>
 
 </body>
 

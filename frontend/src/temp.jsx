@@ -456,48 +456,58 @@ export const CertificatesHome = () => {
 
 export const TransferCertificate = () => {
   const [form, setForm] = useState({
+    date: "",
     studentName: "",
     PENNo: "",
     No: "",
     motherName: "",
     className: "",
-    admissionNo: "",
+    nextClass: "",
     dob: "",
     startingDate: "",
     leavingDate: "",
     feesDate: "",
     conduct: "",
+    reason: "",
   });
 
   const update = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const printTC = () => {
-    // Fill hidden template
-    document.getElementById("tc-student-name").innerText = form.studentName;
-    document.getElementById("tc-date").innerText = form.date;
-    document.getElementById("tc-no").innerText = form.No;
-    document.getElementById("tc-pen-no").innerText = form.PENNo;
-    document.getElementById("tc-mother-name").innerText = form.motherName;
-    document.getElementById("tc-class").innerText = form.className;
-    document.getElementById("tc-next-class").innerText = form.nextClassName;
-    document.getElementById("tc-admission").innerText = form.admissionNo;
-    document.getElementById("tc-dob").innerText = form.Dob;
-    document.getElementById("tc-starting").innerText = form.startingDate;
-    document.getElementById("tc-leaving").innerText = form.leavingDate;
-    document.getElementById("tc-fees-date").innerText = form.feesDate;    
-    document.getElementById("tc-conduct").innerText = form.conduct;
-
-    window.print();
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.innerText = value || "";
+    }
   };
+
+  setText("tc-student-name", form.studentName);
+  setText("tc-date", form.date);
+  setText("tc-pen-no", form.PENNo);
+  setText("tc-mother-name", form.motherName);
+  setText("tc-class-name", form.className);
+  setText("tc-next-class", form.nextClass);
+  setText("tc-dob", form.dob);
+  setText("tc-starting-date", form.startingDate);
+  setText("tc-leaving-date", form.leavingDate);
+  setText("tc-fees-date", form.feesDate);
+  setText("tc-conduct", form.conduct);
+  setText("tc-reason",form.reason);
+
+  window.print();
+};
 
   return (
     <div className="page">
       <h2>Transfer Certificate</h2>
+       Date: <input name = "date" placeholder = "Date of issue" onChange ={update} /> <br />
+
 
       Student's name: <input name="studentName" placeholder="Student Name" onChange={update} /> <br />
       Mother's name: <input name="motherName" placeholder="Mother's Name" onChange={update} /> <br />
       Class: <input name="className" placeholder="Class" onChange={update} /> <br />
+       Next Class: <input name = "nextClass" placeholder = "Next class, if promoted" onChange ={update} /> <br />
       PEN no: <input name="PENNo" placeholder="PEN No" onChange={update} /> <br />
       
       Date of Birth: <input name="dob" type="date" onChange={update} />  <br />
@@ -508,7 +518,7 @@ export const TransferCertificate = () => {
     (ii) Ill health <br />
     (iii) Completion of the School Course <br />
     (iv) Minor reasons <br />
-    (v) Other reasons <br />
+    (v) Other reasons - please specify <br />
 
       <button onClick={printTC}>Print TC</button>
     </div>

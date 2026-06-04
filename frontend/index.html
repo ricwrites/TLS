@@ -44,7 +44,7 @@ body {
     visibility: hidden;
   }
 
-  #tc-template, #tc-template * {
+  #tc-template, #tc-template, #comp-template * {
     visibility: visible;
   }
 
@@ -101,6 +101,25 @@ body {
 
     <div class="signature-row">
       <div>Class Teacher</div>
+      <div>Headmaster</div>
+    </div>
+  </div>
+</div>
+
+
+<div id="comp-template" class="print-hidden">
+  <div class="certificate comp">
+    <img src="/assets/TLS.jpg" width = "50" height = "50" class="cert-logo" />
+
+    <h1><u>CERTIFICATE of ACHIEVEMENT</u></h1>
+   <div id = "compcontainer"> 
+<span>Date: <span id="comp-date"></span></span>
+    </div>
+    <p>
+      This is to certify that <u><b id="comp-student-name"></b></u>, of class <u><b id = "comp-class"></b></u> has participated in the <u> <b id = "comp-name"> </b></u> competition and secured <u><b id = "comp-place"></b></u> Place. 
+
+  
+    <div class="signature-row">
       <div>Headmaster</div>
     </div>
   </div>

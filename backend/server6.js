@@ -45,6 +45,7 @@ app.use(cors({
     "https://thelearningsanctuary.quest",
     "https://admin.thelearningsanctuary.quest",
     "https://teacher.thelearningsanctuary.quest",
+    "https://tlsmarks.onrender.com/",
   ],
   methods: ["GET", "POST","PATCH","PUT", "DELETE"],
   credentials: true
